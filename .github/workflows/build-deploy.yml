@@ -16,7 +16,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GHCRTOKEN }}
       - name: Rendi eseguibile mvnw
         run: chmod +x auth-service/mvnw
       - uses: actions/setup-java@v4
