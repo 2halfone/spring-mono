@@ -63,4 +63,4 @@ jobs:
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
             frazerfrax1@${{ secrets.DEPLOY_HOST }} \
-            "cd /srv/spring-mono && docker compose pull && docker compose up -d --remove-orphans"
+            "cd ~/spring-boot-template && docker compose pull && docker compose up -d --remove-orphans"
