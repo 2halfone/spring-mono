@@ -11,49 +11,56 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Login al registry GitHub Container
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCRTOKEN }}
+
       - name: Rendi eseguibile mvnw
         run: chmod +x auth-service/mvnw
+
       - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: '21' }
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Test & package
         working-directory: auth-service
         run: ./mvnw -B verify
+
       - name: Build & push image
         uses: docker/build-push-action@v5
         with:
           context: auth-service
           push: true
           tags: ${{ env.IMAGE }}
-        env:
-          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
     env:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy via SSH (manual)
+
+      - name: Prepara chiave SSH
         run: |
-          # Prepara la chiave
           mkdir -p /home/runner/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
 
-          # Esegui il deploy
+      - name: Deploy via SSH
+        run: |
           ssh -i /home/runner/.ssh/id_rsa \
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
             frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
-            echo "Connected via SSH"
-            cd /srv/spring-mono
-            docker compose pull
-            docker compose up -d --remove-orphans
-            EOF
+echo "Connected via SSH"
+cd /srv/spring-mono
+docker compose pull
+docker compose up -d --remove-orphans
+EOF
