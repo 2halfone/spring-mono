@@ -75,15 +75,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Wait for services to warm up
-        run: sleep 15
-
-      - name: Smoke test auth-service
+      - name: Prepara chiave SSH
         run: |
-          curl --fail http://${{ secrets.DEPLOY_HOST }}:8081/actuator/health \
-            -o /dev/null && echo "auth-service is healthy"
+          mkdir -p /home/runner/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
 
-      - name: Smoke test chat-service
+      - name: Smoke test via SSH
         run: |
-          curl --fail http://${{ secrets.DEPLOY_HOST }}:8082/actuator/health \
-            -o /dev/null && echo "chat-service is healthy"
+          ssh -i /home/runner/.ssh/id_rsa \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            echo "– Verifica auth-service"
+            curl --fail http://localhost:8081/actuator/health \
+              -o /dev/null && echo "auth-service OK"
+
+            echo "– Verifica chat-service"
+            curl --fail http://localhost:8082/actuator/health \
+              -o /dev/null && echo "chat-service OK"
+          EOF
