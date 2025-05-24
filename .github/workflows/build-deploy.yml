@@ -1,15 +1,17 @@
-name: build-auth-and-deploy
+name: build-and-deploy
 on:
   push:
     branches:
       - main
 
-env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/auth-service:${{ github.sha }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service:
+          - auth-service     # per ora solo questo, aggiungi altri nomi quando serve
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,8 +23,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCRTOKEN }}
 
-      - name: Rendi eseguibile mvnw
-        run: chmod +x auth-service/mvnw
+      - name: Rendi eseguibile mvnw per ${{ matrix.service }}
+        run: chmod +x ${{ matrix.service }}/mvnw
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -30,16 +32,16 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Test & package
-        working-directory: auth-service
+      - name: Test & package ${{ matrix.service }}
+        working-directory: ${{ matrix.service }}
         run: ./mvnw -B verify
 
-      - name: Build & push image
+      - name: Build & push image for ${{ matrix.service }}
         uses: docker/build-push-action@v5
         with:
-          context: auth-service
+          context: ${{ matrix.service }}
           push: true
-          tags: ${{ env.IMAGE }}
+          tags: ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
 
   deploy:
     needs: build
