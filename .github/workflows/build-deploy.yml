@@ -1,7 +1,8 @@
 name: build-auth-and-deploy
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 env:
   IMAGE: ghcr.io/${{ github.repository_owner }}/auth-service:${{ github.sha }}
@@ -10,7 +11,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Login al registry GitHub Container
         uses: docker/login-action@v2
@@ -22,7 +24,8 @@ jobs:
       - name: Rendi eseguibile mvnw
         run: chmod +x auth-service/mvnw
 
-      - uses: actions/setup-java@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
@@ -45,7 +48,8 @@ jobs:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Prepara chiave SSH
         run: |
