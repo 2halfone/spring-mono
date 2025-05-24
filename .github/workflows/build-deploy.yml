@@ -42,27 +42,28 @@ jobs:
           tags: ${{ env.IMAGE }}
 
   deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+needs: build
+runs-on: ubuntu-latest
+env:
+ACTIONS_ALLOW_UNSECURE_COMMANDS: true
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  - name: Checkout code
+    uses: actions/checkout@v4
 
-      - name: Prepara chiave SSH
-        run: |
-          mkdir -p /home/runner/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
-          chmod 600 /home/runner/.ssh/id_rsa
+  - name: Prepara chiave SSH
+    run: |
+      mkdir -p /home/runner/.ssh
+      echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
+      chmod 600 /home/runner/.ssh/id_rsa
 
-      - name: Deploy via SSH
-        run: |
-          ssh -i /home/runner/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
+  - name: Deploy via SSH
+    run: |
+      ssh -i /home/runner/.ssh/id_rsa \
+        -o StrictHostKeyChecking=no \
+        -o UserKnownHostsFile=/dev/null \
+        frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
+
 echo "Connected via SSH"
 cd /srv/spring-mono
 docker compose pull
