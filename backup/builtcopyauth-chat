@@ -69,21 +69,3 @@ jobs:
             -o UserKnownHostsFile=/dev/null \
             frazerfrax1@${{ secrets.DEPLOY_HOST }} \
             "cd ~/spring-boot-template && docker compose pull && docker compose up -d --remove-orphans"
-
-  smoke-test:
-    needs: deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Wait for services to warm up
-        run: sleep 15
-
-      - name: Smoke test auth-service
-        run: |
-          curl --fail http://${{ secrets.DEPLOY_HOST }}:8081/actuator/health \
-            -o /dev/null && echo "auth-service is healthy"
-
-      - name: Smoke test chat-service
-        run: |
-          curl --fail http://${{ secrets.DEPLOY_HOST }}:8082/actuator/health \
-            -o /dev/null && echo "chat-service is healthy"

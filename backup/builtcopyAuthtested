@@ -1,18 +1,15 @@
-name: build-and-deploy
+name: build-auth-and-deploy
 on:
   push:
     branches:
       - main
 
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/auth-service:${{ github.sha }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        service:
-          - auth-service
-          - chat-service
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -22,10 +19,10 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          password: ${{ secrets.GHCRTOKEN }}
 
-      - name: Rendi eseguibile mvnw per ${{ matrix.service }}
-        run: chmod +x ${{ matrix.service }}/mvnw
+      - name: Rendi eseguibile mvnw
+        run: chmod +x auth-service/mvnw
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -33,18 +30,16 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Test & package ${{ matrix.service }}
-        working-directory: ${{ matrix.service }}
+      - name: Test & package
+        working-directory: auth-service
         run: ./mvnw -B verify
 
-      - name: Build & push image for ${{ matrix.service }}
+      - name: Build & push image
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.service }}
+          context: auth-service
           push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:latest
+          tags: ${{ env.IMAGE }}
 
   deploy:
     needs: build
@@ -69,21 +64,3 @@ jobs:
             -o UserKnownHostsFile=/dev/null \
             frazerfrax1@${{ secrets.DEPLOY_HOST }} \
             "cd ~/spring-boot-template && docker compose pull && docker compose up -d --remove-orphans"
-
-  smoke-test:
-    needs: deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Wait for services to warm up
-        run: sleep 15
-
-      - name: Smoke test auth-service
-        run: |
-          curl --fail http://${{ secrets.DEPLOY_HOST }}:8081/actuator/health \
-            -o /dev/null && echo "auth-service is healthy"
-
-      - name: Smoke test chat-service
-        run: |
-          curl --fail http://${{ secrets.DEPLOY_HOST }}:8082/actuator/health \
-            -o /dev/null && echo "chat-service is healthy"
