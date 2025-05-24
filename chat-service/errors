@@ -1,0 +1,259 @@
+1. Errori di package / classi duplicate
+Problema: avevi due MovieWatchlistFunctionApplication in pacchetti diversi (com.example e com.example.movie_watchlist_function), Maven non riusciva a individuare una singola main class.
+
+Soluzione:
+
+Rimosso il file duplicato MovieWatchlistApplication.java nel sotto-pacchetto sbagliato.
+
+Mantenuto un’unica entry point in com.example.MovieWatchlistApplication.
+
+2. FunctionConfiguration / Spring Cloud Function
+Problema: mancava il FunctionCatalog perché era conflittuale con lo stacking di dipendenze Spring Cloud Function e WebFlux.
+
+Soluzione:
+
+Abbandonato l’approccio “function” e passato a un controller REST.
+
+Rimosso FunctionConfiguration.java e aggiunto MovieController.java con @RestController.
+
+3. JPA / generazione ID
+Problema: IdentifierGenerationException: Identifier of entity ‘Movie’ must be manually assigned…
+
+Cause: uso di GenerationType.AUTO senza configurazione appropriata su PostgreSQL → Hibernate non sapeva come generare l’ID.
+
+Soluzione:
+
+java
+Copia codice
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long id;
+(e rimosso qualsiasi columnDefinition non necessario)
+
+4. Test locale → 500 Internal Server Error
+Problema: ogni POST falliva con 500 a causa dell’eccezione di persistenza.
+
+Soluzione: risolto con il punto 3; ora il POST risponde correttamente con il JSON dell’entità salvata.
+
+5. Deploy & systemd
+Problema: dopo il package, systemd non trovava il JAR o non si riavviava correttamente → Tomcat non in ascolto.
+
+Soluzione:
+
+./mvnw clean package -DskipTests
+
+sudo systemctl daemon-reload
+
+sudo systemctl restart spring-app
+
+Verifica con sudo ss -tlnp | grep 8080
+
+6. Networking & firewall GCE
+Problema: non riuscivi a connetterti dall’esterno (curl 35.xxx…)
+
+Soluzione:
+
+Aggiunta tag spring-app all’istanza GCE
+
+Creata regola firewall allow-spring-app-8080 su porta TCP 8080
+
+Ora curl http://[VM_IP]:8080/movies funziona
+
+# 1. Pull & build
+git pull origin main
+./mvnw clean package -DskipTests
+
+# 2. Aggiorna service
+sudo systemctl daemon-reload
+sudo systemctl restart spring-app
+
+# 3. Verifica binding Tomcat
+sudo ss -tlnp | grep 8080
+
+# 4. Test endpoint
+curl http://127.0.0.1:8080/movies
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"title":"Inception","watched":false}' \
+  http://127.0.0.1:8080/movies
+curl http://127.0.0.1:8080/movies
+
+# 5. (se serve) Configura firewall GCE
+gcloud compute instances add-tags spring-vm --zone=europe-west1-d --tags=spring-app
+gcloud compute firewall-rules create allow-spring-app-8080 \
+  --direction=INGRESS --action=ALLOW --rules=tcp:8080 --target-tags=spring-app
+
+È in ascolto
+
+bash
+Copia codice
+sudo ss -tlnp | grep 8080
+# OUTPUT: LISTEN … *:8080 … java
+GET vuoto
+
+bash
+Copia codice
+curl http://127.0.0.1:8080/movies
+# => []
+POST crea un film
+
+bash
+Copia codice
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"title":"Inception","watched":false}' \
+  http://127.0.0.1:8080/movies
+# => {"id":1,"title":"Inception","watched":false}
+GET con dati
+
+bash
+Copia codice
+curl http://127.0.0.1:8080/movies
+# => [{"id":1,"title":"Inception","watched":false}]
+Accesso remoto
+Se l’istanza VM ha il tag spring-app e la firewall rule allow-spring-app-8080, puoi ripetere i comandi curl usando l’IP esterno della VM:
+
+bash
+Copia codice
+curl http://35.241.234.60:8080/movies
+curl -X POST … http://35.241.234.60:8080/movies
+
+Per fermare l’app in esecuzione come service systemd:
+
+bash
+Copia codice
+# Ferma subito il servizio
+sudo systemctl stop spring-app
+
+# (opzionale) Verifica che non sia più in ascolto sulla 8080
+sudo ss -tlnp | grep 8080
+
+# (opzionale) Disabilita l’avvio automatico al boot
+sudo systemctl disable spring-app
+Se vuoi solo disabilitare ma tenerlo in memoria fino al prossimo riavvio del server, salta il disable.
+
+
+
+1. Creazione del progetto Spring Boot
+Apri un terminale e clona il repository:
+
+bash
+Copia
+Modifica
+git clone https://github.com/2halfone/movie-watchlist-function.git
+cd movie-watchlist-function
+Assicurati di avere Java 17 e Maven installati.
+
+2. Struttura del codice
+Movie.java: rappresenta il film, annotato con @Entity per JPA.
+
+MovieRepository.java: estende JpaRepository<Movie, Long> ed espone i metodi CRUD.
+
+MovieController.java: espone due endpoint REST:
+
+GET /movies → lista tutti i film
+
+POST /movies → crea un nuovo film
+
+3. Configurazione del database
+Nelle risorse (src/main/resources/application.properties):
+
+properties
+Copia
+Modifica
+# Usa un database H2 in-memory per semplificare
+spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+spring.datasource.username=sa
+spring.datasource.password=
+
+# Sincronizza automaticamente lo schema
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+# Accetta connessioni da tutte le interfacce di rete
+server.address=0.0.0.0
+4. Compilazione locale
+Nel progetto, esegui:
+
+bash
+Copia
+Modifica
+./mvnw clean package -DskipTests
+Questo crea il file JAR in target/movie-watchlist-function-0.0.1-SNAPSHOT.jar.
+
+5. Deploy su VM Google Compute Engine
+Copia il JAR sulla tua VM (ad esempio con gcloud compute scp o rsync).
+
+Crea un servizio systemd chiamato spring-app.service in /etc/systemd/system/:
+
+ini
+Copia
+Modifica
+[Unit]
+Description=Spring Boot Movie Watchlist Service
+After=network.target
+
+[Service]
+User=frazerfrax1
+ExecStart=/usr/bin/java -jar /home/frazerfrax1/movie-watchlist-function/target/movie-watchlist-function-0.0.1-SNAPSHOT.jar
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+Attiva e avvia il servizio:
+
+bash
+Copia
+Modifica
+sudo systemctl daemon-reload
+sudo systemctl enable spring-app
+sudo systemctl start spring-app
+6. Aprire la porta 8080
+Assicurati che la VM abbia un tag di rete spring-app e crea la regola firewall:
+
+bash
+Copia
+Modifica
+gcloud compute firewall-rules create allow-spring-app-8080 \
+  --direction=INGRESS \
+  --action=ALLOW \
+  --rules=tcp:8080 \
+  --target-tags=spring-app
+7. Verifica e debug
+Porta in ascolto
+
+bash
+Copia
+Modifica
+sudo ss -tlnp | grep 8080
+Log dell’app
+
+bash
+Copia
+Modifica
+sudo journalctl -u spring-app -f
+8. Test degli endpoint
+GET per vedere la lista (all’inizio vuota):
+
+bash
+Copia
+Modifica
+curl http://127.0.0.1:8080/movies
+# → []
+POST per creare un film:
+
+bash
+Copia
+Modifica
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"title":"Inception","watched":false}' \
+  http://127.0.0.1:8080/movies
+# → {"id":1,"title":"Inception","watched":false}
+GET di nuovo per verificare il salvataggio:
+
+bash
+Copia
+Modifica
+curl http://127.0.0.1:8080/movies
+# → [{"id":1,"title":"Inception","watched":false}]
+🎉 Ora la tua applicazione Spring Boot è in esecuzione su una VM Google, risponde su porta 8080 e salva i dati in memoria H2!
