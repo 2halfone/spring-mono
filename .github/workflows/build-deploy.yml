@@ -40,27 +40,20 @@ jobs:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - uses: actions/checkout@v4
-      - name: Clean and test SSH host
+
+      - name: Scrivi DEPLOY_KEY su file
         run: |
-          # crea la chiave
           mkdir -p /home/runner/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
 
-          # lista per debug
-          ls -l /home/runner/.ssh
-
-          # Pulisci il valore di DEPLOY_HOST
-          RAW_HOST="${{ secrets.DEPLOY_HOST }}"
-          CLEANED_HOST=$(echo -n "$RAW_HOST" | tr -d \'\\r\' | tr -d \' \' | tr -d \'\\n\')
-          
-          echo "RAW HOST: [$RAW_HOST]"
-          echo "USING CLEANED HOST: [$CLEANED_HOST]"
-          echo "HEX CLEANED HOST:"
-          echo -n "$CLEANED_HOST" | xxd
-
-          # prova SSH con debug usando CLEANED_HOST
-          ssh -vvv -i /home/runner/.ssh/id_rsa \\
+      - name: Deploy via SSH (manual)
+        run: |
+          ssh -i /home/runner/.ssh/id_rsa \\
               -o StrictHostKeyChecking=no \\
               -o UserKnownHostsFile=/dev/null \\
-              frazerfrax1@"$CLEANED_HOST" echo "SSH OK"
+              frazerfrax1@${{ secrets.DEPLOY_HOST }} << \'EOF\'
+            cd /srv/spring-mono
+            docker compose pull
+            docker compose up -d --remove-orphans
+            EOF
