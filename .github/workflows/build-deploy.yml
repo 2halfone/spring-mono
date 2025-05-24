@@ -10,7 +10,8 @@ jobs:
     strategy:
       matrix:
         service:
-          - auth-service     # per ora solo questo, aggiungi altri nomi quando serve
+          - auth-service
+          - chat-service
 
     steps:
       - name: Checkout code
