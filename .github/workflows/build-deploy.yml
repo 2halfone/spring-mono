@@ -40,34 +40,23 @@ jobs:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - uses: actions/checkout@v4
-      - name: Scrivi DEPLOY_KEY su file
+      - name: Deploy via SSH (bash)
         run: |
+          # crea la chiave
           mkdir -p /home/runner/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
 
-      - name: Elenca la cartella SSH
-        run: ls -l /home/runner/.ssh
+          # lista per debug
+          ls -l /home/runner/.ssh
 
-      - name: Test SSH key locally
-        run: |
-          ssh -i /home/runner/.ssh/id_rsa \
-              -o StrictHostKeyChecking=no \
-              -o UserKnownHostsFile=/dev/null \
-              -o BatchMode=yes \
-              frazerfrax1@${{ secrets.DEPLOY_HOST }} echo "SSH OK"
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host:              ${{ secrets.DEPLOY_HOST }}
-          port:              22
-          username:          ${{ secrets.DEPLOY_USER }}
-          key_path:          /home/runner/.ssh/id_rsa
-          passphrase:        ${{ secrets.DEPLOY_PASSPHRASE }}
-          script: |
+          # prova SSH con debug
+          ssh -vvv -i /home/runner/.ssh/id_rsa \\
+              -o StrictHostKeyChecking=no \\
+              -o UserKnownHostsFile=/dev/null \\
+              frazerfrax1@${{ secrets.DEPLOY_HOST }} << \'EOF\'
+            echo "Connected via SSH"
             cd /srv/spring-mono
             docker compose pull
             docker compose up -d --remove-orphans
-        env:
-          STRICT_HOST_KEY_CHECKING: "no"
+            EOF
