@@ -40,16 +40,18 @@ jobs:
       - uses: actions/checkout@v4 # Assuming checkout is needed, if not already present in the deploy job.
       - name: Scrivi DEPLOY_KEY su file
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          # Usa $HOME esplicito, non '~'
+          mkdir -p $HOME/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > $HOME/.ssh/id_rsa
+          chmod 600 $HOME/.ssh/id_rsa
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
           host:     ${{ secrets.DEPLOY_HOST }}
           port:     22
           username: ${{ secrets.DEPLOY_USER }}
-          key_path: ~/.ssh/id_rsa
+          key_path: ${{ runner.home }}/.ssh/id_rsa
           script: |
             cd /srv/spring-mono
             docker compose pull
