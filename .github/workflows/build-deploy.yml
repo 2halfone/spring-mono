@@ -52,7 +52,7 @@ jobs:
           ssh -i /home/runner/.ssh/id_rsa \\
               -o StrictHostKeyChecking=no \\
               -o UserKnownHostsFile=/dev/null \\
-              frazerfrax1@${{ secrets.DEPLOY_HOST }} << \'EOF\'
+              frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
             cd /srv/spring-mono
             docker compose pull
             docker compose up -d --remove-orphans
