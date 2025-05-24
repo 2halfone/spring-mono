@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login al registry
+      - name: Login al registry GHCR
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
@@ -62,9 +62,5 @@ jobs:
           ssh -i /home/runner/.ssh/id_rsa \
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
-echo "Connected via SSH"
-cd /srv/spring-mono
-docker compose pull
-docker compose up -d --remove-orphans
-EOF
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+            "cd /srv/spring-mono && docker compose pull && docker compose up -d --remove-orphans"
