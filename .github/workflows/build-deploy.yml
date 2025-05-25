@@ -56,18 +56,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Prepara chiave SSH
+      - name: Add SSH key
         run: |
-          mkdir -p /home/runner/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
-          chmod 600 /home/runner/.ssh/id_rsa
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/github_deploy_key
+          chmod 600 ~/.ssh/github_deploy_key
 
-      - name: Deploy via SSH
+      - name: SSH into VM and deploy
         run: |
-          ssh -i /home/runner/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
-            "cd ~/spring-boot-template && docker compose pull && docker compose up -d --remove-orphans"
+          ssh -i ~/.ssh/github_deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'cd spring-boot-template && docker compose -f docker-compose.dev.yml up -d'
 
-  
