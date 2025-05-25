@@ -64,5 +64,5 @@ jobs:
 
       - name: SSH into VM and deploy
         run: |
-          ssh -i ~/.ssh/github_deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} 'cd spring-boot-template && docker compose -f docker-compose.dev.yml up -d'
+          ssh -i ~/.ssh/github_deploy_key -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
 
