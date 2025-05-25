@@ -64,18 +64,19 @@ jobs:
 
       - name: Detailed SSH debug + deploy
         run: |
-          ssh -vvv -i ~/.ssh/github_deploy_key \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            -o ConnectTimeout=10 \
+          ssh -vvv -i ~/.ssh/github_deploy_key \\
+            -o StrictHostKeyChecking=no \\
+            -o UserKnownHostsFile=/dev/null \\
+            -o ConnectTimeout=10 \\
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
-echo "Connected as $(whoami) on $(hostname)"
-echo "Listing authorized_keys:"
-ls -l ~/.ssh/authorized_keys && cat ~/.ssh/authorized_keys
-echo "Docker compose status:"
-cd ~/spring-boot-template
-docker compose ps
-echo "Pull & restart:"
-docker compose pull
-docker compose up -d --remove-orphans
-EOF
+            echo "Connected as $(whoami) on $(hostname)"
+            echo "Listing authorized_keys:"
+            ls -l ~/.ssh/authorized_keys && cat ~/.ssh/authorized_keys
+            echo "Docker compose status:"
+            cd ~/spring-boot-template
+            docker compose ps
+            echo "Pull & restart:"
+            docker compose pull
+            docker compose up -d --remove-orphans
+            EOF
+
