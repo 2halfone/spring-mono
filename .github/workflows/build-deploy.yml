@@ -17,14 +17,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login al registry GHCR
+      - name: Login to GHCR
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - name: Rendi eseguibile mvnw per ${{ matrix.service }}
+      - name: Make mvnw executable for ${{ matrix.service }}
         run: chmod +x ${{ matrix.service }}/mvnw
 
       - name: Setup Java
