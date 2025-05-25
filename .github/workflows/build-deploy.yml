@@ -56,27 +56,42 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Add SSH key
+      - name: Prepara chiave SSH
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/github_deploy_key
-          chmod 600 ~/.ssh/github_deploy_key
+          mkdir -p /home/runner/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
 
-      - name: Detailed SSH debug + deploy
+      - name: Deploy via SSH
         run: |
-          ssh -vvv -i ~/.ssh/github_deploy_key \\
-            -o StrictHostKeyChecking=no \\
-            -o UserKnownHostsFile=/dev/null \\
-            -o ConnectTimeout=10 \\
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
-            echo "Connected as $(whoami) on $(hostname)"
-            echo "Listing authorized_keys:"
-            ls -l ~/.ssh/authorized_keys && cat ~/.ssh/authorized_keys
-            echo "Docker compose status:"
-            cd ~/spring-boot-template
-            docker compose ps
-            echo "Pull & restart:"
-            docker compose pull
-            docker compose up -d --remove-orphans
-            EOF
+          ssh -i /home/runner/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+            "cd ~/spring-boot-template && docker compose pull && docker compose up -d --remove-orphans"
 
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepara chiave SSH
+        run: |
+          mkdir -p /home/runner/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
+
+      - name: Smoke test via SSH
+        run: |
+          ssh -i /home/runner/.ssh/id_rsa \
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            echo "– Verifica auth-service"
+            curl --fail http://localhost:8081/actuator/health \
+              -o /dev/null && echo "auth-service OK"
+
+            echo "– Verifica chat-service"
+            curl --fail http://localhost:8082/actuator/health \
+              -o /dev/null && echo "chat-service OK"
+          EOF
