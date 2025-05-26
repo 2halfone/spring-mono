@@ -66,7 +66,11 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh -i /home/runner/.ssh/id_rsa             -o StrictHostKeyChecking=no             -o UserKnownHostsFile=/dev/null             frazerfrax1@${{ secrets.DEPLOY_HOST }}             "cd ~/staging &&              docker compose -f docker-compose.dev.yml pull &&              docker compose -f docker-compose.dev.yml up -d --remove-orphans"
+          ssh -i /home/runner/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+            "cd ~/staging && docker compose -f docker-compose.dev.yml pull && docker compose -f docker-compose.dev.yml up -d --remove-orphans"
 
   smoke-test:
     needs: deploy
@@ -81,8 +85,16 @@ jobs:
 
       - name: Smoke test auth-service
         run: |
-          ssh -i /home/runner/.ssh/id_rsa -o StrictHostKeyChecking=no             frazerfrax1@${{ secrets.DEPLOY_HOST }}             "echo '– Verifica auth-service' && curl --fail http://localhost:8081/actuator/health -o /dev/null && echo 'auth-service OK'"
+          ssh -i /home/runner/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+            "curl --fail http://localhost:9081/actuator/health && echo 'auth-service OK'"
 
       - name: Smoke test chat-service
         run: |
-          ssh -i /home/runner/.ssh/id_rsa -o StrictHostKeyChecking=no             frazerfrax1@${{ secrets.DEPLOY_HOST }}             "echo '– Verifica chat-service' && curl --fail http://localhost:8082/actuator/health -o /dev/null && echo 'chat-service OK'"
+          ssh -i /home/runner/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+            "curl --fail http://localhost:9082/actuator/health && echo 'chat-service OK'"
