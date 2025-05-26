@@ -10,10 +10,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Debug DNS resolution
+      - name: Debug DEPLOY_HOST
         run: |
-          echo "Resolving ${{ secrets.DEPLOY_HOST }}…"
+          echo "Secrets values (masked):"
+          echo "DEPLOY_HOST=${{ secrets.DEPLOY_HOST }}"
+          echo "Attempting DNS resolution and ping..."
           getent hosts ${{ secrets.DEPLOY_HOST }} || echo "DNS lookup failed"
+          ping -c 1 ${{ secrets.DEPLOY_HOST }} || echo "Ping failed"
 
       - name: Setup SSH key
         run: |
@@ -24,7 +27,7 @@ jobs:
 
       - name: Deploy to VM
         run: |
-          ssh -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.DEPLOY_PORT }} ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
             cd ~/staging
             git pull origin staging
             docker compose up -d --build
