@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: springuser
       POSTGRES_PASSWORD: change_me
     ports:
-      - "5432:5432"
+      - "15432:15432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
