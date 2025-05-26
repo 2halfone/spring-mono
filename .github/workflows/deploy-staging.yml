@@ -66,11 +66,10 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh -i /home/runner/.ssh/id_rsa \
+          ssh -i ~/.ssh/id_rsa \
             -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
             ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
-            "cd ~/staging && docker compose pull && docker compose up -d --remove-orphans"
+            "cd ~/staging && git pull origin staging && docker compose up -d --remove-orphans"
 
   smoke-test:
     needs: deploy
