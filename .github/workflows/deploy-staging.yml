@@ -2,33 +2,30 @@ name: Deploy Staging
 
 on:
   push:
-    branches: [ staging ]
+    branches:
+      - staging
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Debug DEPLOY_HOST
+      - name: Prepara chiave SSH
         run: |
-          echo "Secrets values (masked):"
-          echo "DEPLOY_HOST=${{ secrets.DEPLOY_HOST }}"
-          echo "Attempting DNS resolution and ping..."
-          getent hosts ${{ secrets.DEPLOY_HOST }} || echo "DNS lookup failed"
-          ping -c 1 ${{ secrets.DEPLOY_HOST }} || echo "Ping failed"
+          mkdir -p /home/runner/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
 
-      - name: Setup SSH key
+      - name: Deploy via SSH
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy to VM
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} << 'EOF'
-            cd ~/staging
-            git pull origin staging
-            docker compose up -d --build
-          EOF
+          ssh -i /home/runner/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "cd ~/staging && git pull origin staging && docker compose up -d --remove-orphans"
