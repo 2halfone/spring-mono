@@ -1,10 +1,8 @@
 name: build-and-deploy-staging
-
 on:
   push:
     branches:
       - staging
-  workflow_dispatch:
 
 jobs:
   build:
@@ -64,33 +62,13 @@ jobs:
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
 
-      - name: Verify SSH key and acceptance
-        run: |
-          # 1) Scrivi il secret in un file temporaneo
-          echo "${{ secrets.DEPLOY_KEY }}" > debug_id_rsa
-          chmod 600 debug_id_rsa
-
-          # 2) Mostra l’impronta della chiave
-          echo "### Fingerprint of DEPLOY_KEY:"
-          ssh-keygen -lf debug_id_rsa
-
-          # 3) Avvia un agente e carica la chiave
-          eval "$(ssh-agent -s)"
-          ssh-add debug_id_rsa
-
-          # 4) Prova la connessione
-          echo "### Testing SSH to staging VM…"
-          ssh -o StrictHostKeyChecking=no \
-              -o BatchMode=yes \
-              ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} true \
-            && echo "✅ Key accepted by VM" \
-            || echo "❌ Key rejected by VM"
-
       - name: Deploy via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "cd ~/staging && git pull origin staging && docker compose pull && docker compose up -d --remove-orphans"
+          ssh -i /home/runner/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+            "cd ~/staging && docker compose pull && docker compose up -d --remove-orphans"
 
   smoke-test:
     needs: deploy
@@ -106,9 +84,9 @@ jobs:
       - name: Smoke test via SSH
         run: |
           ssh -i /home/runner/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
             echo "– Verifica auth-service"
             curl --fail http://localhost:9081/actuator/health \
               -o /dev/null && echo "auth-service OK"
