@@ -1,6 +1,4 @@
-﻿# .github/workflows/build-and-deploy-staging.yml
-name: build-and-deploy-staging
-
+﻿name: build-and-deploy-staging
 on:
   push:
     branches:
@@ -70,9 +68,7 @@ jobs:
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
             frazerfrax1@${{ secrets.DEPLOY_HOST }} \
-            "cd ~/staging && \
-             docker compose -f docker-compose.dev.yml pull && \
-             docker compose -f docker-compose.dev.yml up -d --remove-orphans"
+            "cd ~/staging && docker compose pull && docker compose up -d --remove-orphans"
 
   smoke-test:
     needs: deploy
@@ -88,12 +84,14 @@ jobs:
       - name: Smoke test via SSH
         run: |
           ssh -i /home/runner/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
-              echo "– Verifica auth-service"
-              curl --fail http://localhost:9081/actuator/health -o /dev/null && echo "auth-service OK"
+              -o StrictHostKeyChecking=no \
+              -o UserKnownHostsFile=/dev/null \
+              frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            echo "– Verifica auth-service"
+            curl --fail http://localhost:9081/actuator/health \
+              -o /dev/null && echo "auth-service OK"
 
-             echo "– Verifica chat-service"
-              curl --fail http://localhost:9082/actuator/health -o /dev/null && echo "chat-service OK"
-            EOF
+            echo "– Verifica chat-service"
+            curl --fail http://localhost:9082/actuator/health \
+              -o /dev/null && echo "chat-service OK"
+          EOF
