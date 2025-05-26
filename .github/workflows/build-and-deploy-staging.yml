@@ -39,7 +39,7 @@ jobs:
         working-directory: ${{ matrix.service }}
         run: ./mvnw -B verify
 
-      - name: Build & push image for ${{ matrix.service }}
+      - name: Build & push image per ${{ matrix.service }}
         uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.service }}
@@ -83,7 +83,9 @@ jobs:
         run: |
           mkdir -p /home/runner/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
-          chmod 600 /home/runner/.ssh/id_rsa      - name: Smoke test via SSH
+          chmod 600 /home/runner/.ssh/id_rsa
+
+      - name: Smoke test via SSH
         run: |
           ssh -i /home/runner/.ssh/id_rsa \
             -o StrictHostKeyChecking=no \
