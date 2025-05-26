@@ -64,16 +64,27 @@ jobs:
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
 
-      - name: Dump SSH key fingerprint
+      - name: Verify SSH key and acceptance
         run: |
-          ssh-keygen -lf <(echo "${{ secrets.DEPLOY_KEY }}")
-          ssh -i <(echo "${{ secrets.DEPLOY_KEY }}") \
-            -o PreferredAuthentications=publickey \
-            -o StrictHostKeyChecking=no \
-            -o BatchMode=yes \
-            -o UserKnownHostsFile=/dev/null \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} true \
-            && echo "Key accepted" || echo "Key rejected"
+          # 1) Scrivi il secret in un file temporaneo
+          echo "${{ secrets.DEPLOY_KEY }}" > debug_id_rsa
+          chmod 600 debug_id_rsa
+
+          # 2) Mostra l’impronta della chiave
+          echo "### Fingerprint of DEPLOY_KEY:"
+          ssh-keygen -lf debug_id_rsa
+
+          # 3) Avvia un agente e carica la chiave
+          eval "$(ssh-agent -s)"
+          ssh-add debug_id_rsa
+
+          # 4) Prova la connessione
+          echo "### Testing SSH to staging VM…"
+          ssh -o StrictHostKeyChecking=no \
+              -o BatchMode=yes \
+              ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} true \
+            && echo "✅ Key accepted by VM" \
+            || echo "❌ Key rejected by VM"
 
       - name: Deploy via SSH
         run: |
