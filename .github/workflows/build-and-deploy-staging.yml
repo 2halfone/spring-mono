@@ -45,12 +45,13 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
             ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:latest
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
     env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true    steps:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -72,12 +73,13 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Prepara chiave SSH
+    steps:      - name: Prepara chiave SSH
         run: |
           mkdir -p /home/runner/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
-          chmod 600 /home/runner/.ssh/id_rsa      - name: Smoke test via SSH
+          chmod 600 /home/runner/.ssh/id_rsa
+
+      - name: Smoke test via SSH
         run: |
           ssh -i /home/runner/.ssh/id_rsa \
               -o StrictHostKeyChecking=no \
