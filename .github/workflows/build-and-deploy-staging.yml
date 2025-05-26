@@ -1,4 +1,6 @@
-name: build-and-deploy
+# .github/workflows/build-and-deploy-staging.yml
+name: build-and-deploy-staging
+
 on:
   push:
     branches:
@@ -45,6 +47,7 @@ jobs:
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
             ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:latest
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -73,7 +76,8 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
 
-    steps:      - name: Prepara chiave SSH
+    steps:
+      - name: Prepara chiave SSH
         run: |
           mkdir -p /home/runner/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
@@ -82,14 +86,12 @@ jobs:
       - name: Smoke test via SSH
         run: |
           ssh -i /home/runner/.ssh/id_rsa \
-              -o StrictHostKeyChecking=no \
-              -o UserKnownHostsFile=/dev/null \
-              frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
-            echo "– Verifica auth-service"
-            curl --fail http://localhost:9081/actuator/health \
-              -o /dev/null && echo "auth-service OK"
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
+              echo "– Verifica auth-service"
+              curl --fail http://localhost:9081/actuator/health -o /dev/null && echo "auth-service OK"
 
-            echo "– Verifica chat-service"
-            curl --fail http://localhost:9082/actuator/health \
-              -o /dev/null && echo "chat-service OK"
-          EOF
+              echo "– Verifica chat-service"
+              curl --fail http://localhost:9082/actuator/health -o /dev/null && echo "chat-service OK"
+            EOF
