@@ -65,11 +65,20 @@ jobs:
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
 
+      - name: Debug DNS Resolution for DEPLOY_HOST
+        run: |
+          echo "Attempting to resolve DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}"
+          echo "Using getent hosts:"
+          getent hosts ${{ secrets.DEPLOY_HOST }}
+          echo "Using dig:"
+          dig ${{ secrets.DEPLOY_HOST }} +short
+          echo "Attempting to ping (1 packet):"
+          ping -c 1 ${{ secrets.DEPLOY_HOST }} || echo "Ping failed or host not reachable"
+
       - name: Deploy via SSH
         run: |
-          ssh -i /home/runner/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+          ssh -o StrictHostKeyChecking=no \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
             "cd ~/staging && git pull origin staging && docker compose pull && docker compose up -d --remove-orphans"
 
   smoke-test:
