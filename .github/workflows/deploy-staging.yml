@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
 
     steps:
       - name: Checkout code
@@ -23,10 +22,14 @@ jobs:
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
 
+      - name: Debug secret values
+        run: |
+          echo "DEBUG: DEPLOY_USER=${{ secrets.DEPLOY_USER }}"
+          echo "DEBUG: DEPLOY_HOST=${{ secrets.DEPLOY_HOST }}"
+
       - name: Deploy via SSH
         run: |
-          echo "Deploying to host: ${{ env.DEPLOY_HOST }}"
-          ssh -i ~/.ssh/id_deploy_vm \
-              -o StrictHostKeyChecking=no \
-              frazerfrax1@${{ env.DEPLOY_HOST }} \
-              "cd /app && ./deploy.sh"
+          ssh -i /home/runner/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            "cd ~/staging && git pull origin staging && docker compose up -d --remove-orphans"
