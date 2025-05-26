@@ -1,5 +1,4 @@
-# .github/workflows/build-and-deploy-staging.yml
-name: build-and-deploy-staging
+﻿name: build-and-deploy-staging
 
 on:
   push:
@@ -66,49 +65,26 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh -i /home/runner/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
-            "cd ~/staging && \
-             docker compose -f docker-compose.dev.yml pull && \
-             docker compose -f docker-compose.dev.yml up -d --remove-orphans"
+          ssh -i /home/runner/.ssh/id_rsa `
+            -o StrictHostKeyChecking=no `
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} `
+            "cd ~/staging && docker compose -f docker-compose.dev.yml pull && docker compose -f docker-compose.dev.yml up -d --remove-orphans"
 
   smoke-test:
     needs: deploy
     runs-on: ubuntu-latest
 
     steps:
-      - name: Prepara chiave SSH
-        run: |
-          mkdir -p /home/runner/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
-          chmod 600 /home/runner/.ssh/id_rsa
-  smoke-test:
-    needs: deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Prepara chiave SSH
-        run: |
-          mkdir -p /home/runner/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
-          chmod 600 /home/runner/.ssh/id_rsa
-
       - name: Smoke test auth-service
         run: |
-          ssh -i /home/runner/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+          ssh -i /home/runner/.ssh/id_rsa `
+            -o StrictHostKeyChecking=no `
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} `
             "curl --fail http://localhost:9081/actuator/health -o /dev/null && echo 'auth-service OK'"
 
       - name: Smoke test chat-service
         run: |
-          ssh -i /home/runner/.ssh/id_rsa \
-            -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+          ssh -i /home/runner/.ssh/id_rsa `
+            -o StrictHostKeyChecking=no `
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} `
             "curl --fail http://localhost:9082/actuator/health -o /dev/null && echo 'chat-service OK'"
-
-    
