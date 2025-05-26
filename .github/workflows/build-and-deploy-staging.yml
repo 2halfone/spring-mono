@@ -50,11 +50,11 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
-      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-
-    steps:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true    steps:
       - name: Checkout code
-        uses: actions/checkout@v4      - name: Prepara chiave SSH
+        uses: actions/checkout@v4
+
+      - name: Prepara chiave SSH
         run: |
           mkdir -p /home/runner/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
@@ -77,14 +77,13 @@ jobs:
         run: |
           mkdir -p /home/runner/.ssh
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
-          chmod 600 /home/runner/.ssh/id_rsa
-
-      - name: Smoke test via SSH
+          chmod 600 /home/runner/.ssh/id_rsa      - name: Smoke test via SSH
         run: |
           ssh -i /home/runner/.ssh/id_rsa \
               -o StrictHostKeyChecking=no \
               -o UserKnownHostsFile=/dev/null \
-              frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'            echo "– Verifica auth-service"
+              frazerfrax1@${{ secrets.DEPLOY_HOST }} << 'EOF'
+            echo "– Verifica auth-service"
             curl --fail http://localhost:9081/actuator/health \
               -o /dev/null && echo "auth-service OK"
 
