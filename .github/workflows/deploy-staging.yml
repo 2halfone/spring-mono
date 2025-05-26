@@ -22,10 +22,10 @@ jobs:
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
 
-      - name: Deploy via SSH
+      - name: Deploy via SSH (static IP test)
         run: |
           ssh -i /home/runner/.ssh/id_rsa \
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
-            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
+            ${{ secrets.DEPLOY_USER }}@34.38.198.23 \
             "cd ~/staging && git pull origin staging && docker compose up -d --remove-orphans"
