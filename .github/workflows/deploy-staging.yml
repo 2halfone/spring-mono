@@ -16,16 +16,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Prepara chiave SSH
+      - name: Configure SSH
         run: |
-          mkdir -p /home/runner/.ssh
-          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
-          chmod 600 /home/runner/.ssh/id_rsa
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}"     > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
       - name: Deploy via SSH
         run: |
-          ssh -i /home/runner/.ssh/id_rsa \
+          ssh -i ~/.ssh/id_rsa \
             -o StrictHostKeyChecking=no \
-            -o UserKnownHostsFile=/dev/null \
-            "${{ secrets.DEPLOY_USER }}@34.38.198.23" \
+            -o UserKnownHostsFile=~/.ssh/known_hosts \
+            ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }} \
             "cd ~/staging && git pull origin staging && docker compose up -d --remove-orphans"
