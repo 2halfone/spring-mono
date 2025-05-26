@@ -85,15 +85,24 @@ jobs:
           echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
           chmod 600 /home/runner/.ssh/id_rsa
 
-            - name: Smoke test auth-service
+        smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepara chiave SSH
         run: |
-          ssh -i /home/runner/.ssh/id_rsa -o StrictHostKeyChecking=no \
-            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
-            "curl --fail http://localhost:9081/actuator/health -o /dev/null && echo 'auth-service OK'"
+          mkdir -p /home/runner/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
+
+      - name: Smoke test auth-service
+        run: ssh -i /home/runner/.ssh/id_rsa -o StrictHostKeyChecking=no \
+          frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+          "curl --fail http://localhost:9081/actuator/health -o /dev/null && echo 'auth-service OK'"
 
       - name: Smoke test chat-service
-        run: |
-          ssh -i /home/runner/.ssh/id_rsa -o StrictHostKeyChecking=no \
-            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
-            "curl --fail http://localhost:9082/actuator/health -o /dev/null && echo 'chat-service OK'"
+        run: ssh -i /home/runner/.ssh/id_rsa -o StrictHostKeyChecking=no \
+          frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+          "curl --fail http://localhost:9082/actuator/health -o /dev/null && echo 'chat-service OK'"
 
