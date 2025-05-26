@@ -10,6 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Debug DNS resolution
+        run: |
+          echo "Resolving ${{ secrets.DEPLOY_HOST }}…"
+          getent hosts ${{ secrets.DEPLOY_HOST }} || echo "DNS lookup failed"
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
