@@ -73,4 +73,29 @@ jobs:
             "cd /home/frazerfrax1/staging && docker compose -f docker-compose.staging.yml pull && docker compose -f docker-compose.staging.yml up -d --remove-orphans"
 
 
-  
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Prepara chiave SSH
+        run: |
+          mkdir -p /home/runner/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > /home/runner/.ssh/id_rsa
+          chmod 600 /home/runner/.ssh/id_rsa
+
+      - name: Smoke test auth-service
+        run: |
+          ssh -i /home/runner/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+            "curl --fail http://localhost:9081/actuator/health && echo 'auth-service OK'"
+
+      - name: Smoke test chat-service
+        run: |
+          ssh -i /home/runner/.ssh/id_rsa \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            frazerfrax1@${{ secrets.DEPLOY_HOST }} \
+            "curl --fail http://localhost:9082/actuator/health && echo 'chat-service OK'"
