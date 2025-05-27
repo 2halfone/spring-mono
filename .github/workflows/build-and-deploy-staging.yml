@@ -70,7 +70,7 @@ jobs:
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
             frazerfrax1@${{ secrets.DEPLOY_HOST }} \
-            "cd ~/staging && docker compose -f docker-compose.staging pull && docker compose -f docker-compose.staging up -d --remove-orphans"
+            cd ~/staging && docker compose -f docker-compose.staging.yml pull && docker compose -f docker-compose.staging.yml up -d --remove-orphans
 
   smoke-test:
     needs: deploy
