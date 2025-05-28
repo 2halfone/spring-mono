@@ -14,6 +14,7 @@ jobs:
         service:
           - auth-service
           - chat-service
+          - gateway-service # Add gateway-service to the matrix
 
     steps:
       - name: Checkout code
@@ -27,7 +28,12 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Rendi eseguibile mvnw per ${{ matrix.service }}
-        run: chmod +x ${{ matrix.service }}/mvnw
+        run: |
+          if [ "${{ matrix.service }}" = "gateway-service" ]; then
+            chmod +x gateway/initial/mvnw
+          else
+            chmod +x ${{ matrix.service }}/mvnw
+          fi
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -36,13 +42,14 @@ jobs:
           java-version: '21'
 
       - name: Test & package ${{ matrix.service }}
-        working-directory: ${{ matrix.service }}
+        working-directory: ${{ matrix.service == 'gateway-service' && 'gateway/initial' || matrix.service }}
         run: ./mvnw -B verify
 
       - name: Build & push image per ${{ matrix.service }}
         uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.service }}
+          context: ${{ matrix.service == 'gateway-service' && './gateway' || matrix.service }}
+          file: ${{ matrix.service == 'gateway-service' && './gateway/Dockerfile' || '' }} # Dockerfile path for gateway-service
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
@@ -73,4 +80,3 @@ jobs:
             "cd /home/frazerfrax1/staging && docker compose -f docker-compose.staging.yml pull && docker compose -f docker-compose.staging.yml up -d --remove-orphans"
 
 
-  
