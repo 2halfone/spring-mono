@@ -64,3 +64,4 @@ jobs:
             -o UserKnownHostsFile=/dev/null \
             frazerfrax1@${{ secrets.DEPLOY_HOST }} \
             "cd ~/spring-boot-template && docker compose pull && docker compose up -d --remove-orphans"
+f
