@@ -113,8 +113,8 @@ Se l’istanza VM ha il tag spring-app e la firewall rule allow-spring-app-8080,
 
 bash
 Copia codice
-curl http://35.241.234.60:8080/movies
-curl -X POST … http://35.241.234.60:8080/movies
+curl http://34.140.122.146:8080/movies
+curl -X POST … http://34.140.122.146:8080/movies
 
 Per fermare l’app in esecuzione come service systemd:
 
