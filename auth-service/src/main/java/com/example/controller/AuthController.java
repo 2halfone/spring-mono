@@ -86,31 +86,6 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
-        try {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                if (jwtUtil.validateToken(token)) {
-                    String username = jwtUtil.getUsernameFromToken(token);
-                    List<String> roles = jwtUtil.getRolesFromToken(token);
-                    
-                    return ResponseEntity.ok(Map.of(
-                        "username", username,
-                        "roles", roles,
-                        "authenticated", true
-                    ));
-                }
-            }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("authenticated", false, "message", "Invalid or missing token"));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("authenticated", false, "message", "Authentication failed"));
-        }
-    }
-
     /**
      * Refresh JWT token.
      */
@@ -137,6 +112,31 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("message", "Token refresh failed"));
+        }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                if (jwtUtil.validateToken(token)) {
+                    String username = jwtUtil.getUsernameFromToken(token);
+                    List<String> roles = jwtUtil.getRolesFromToken(token);
+                    
+                    return ResponseEntity.ok(Map.of(
+                        "username", username,
+                        "roles", roles,
+                        "authenticated", true
+                    ));
+                }
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("authenticated", false, "message", "Invalid or missing token"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("authenticated", false, "message", "Authentication failed"));
         }
     }
 
