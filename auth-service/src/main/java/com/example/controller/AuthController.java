@@ -10,6 +10,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * Authentication Controller for JWT token generation.
  * Only handles authentication logic - token generation and refresh.
@@ -65,37 +68,46 @@ public class AuthController {
      * Validates JWT token.
      */
     @PostMapping("/validate")
-    public ResponseEntity<?> validateToken(@RequestParam String token) {
+    public ResponseEntity<?> validateToken(@RequestBody Map<String, String> request) {
         try {
-            boolean isValid = jwtUtil.validateToken(token);
-            
-            if (isValid) {
-                String username = jwtUtil.extractUsername(token);
-                String roles = jwtUtil.extractRoles(token);
-                
-                return ResponseEntity.ok().body(new TokenValidationResponse(
-                    true, 
-                    username, 
-                    roles,
-                    "Token is valid"
+            String token = request.get("token");
+            if (jwtUtil.validateToken(token)) {
+                String username = jwtUtil.getUsernameFromToken(token);
+                return ResponseEntity.ok(Map.of(
+                    "valid", true,
+                    "username", username
                 ));
-            } else {
-                return ResponseEntity.badRequest()
-                    .body(new TokenValidationResponse(
-                        false, 
-                        null, 
-                        null,
-                        "Token is invalid or expired"
-                    ));
             }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("valid", false, "message", "Invalid token"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body(new TokenValidationResponse(
-                    false, 
-                    null, 
-                    null,
-                    "Token validation failed: " + e.getMessage()
-                ));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("valid", false, "message", "Token validation failed"));
+        }
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
+        try {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                String token = authHeader.substring(7);
+                if (jwtUtil.validateToken(token)) {
+                    String username = jwtUtil.getUsernameFromToken(token);
+                    List<String> roles = jwtUtil.getRolesFromToken(token);
+                    
+                    return ResponseEntity.ok(Map.of(
+                        "username", username,
+                        "roles", roles,
+                        "authenticated", true
+                    ));
+                }
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("authenticated", false, "message", "Invalid or missing token"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("authenticated", false, "message", "Authentication failed"));
         }
     }
 
@@ -103,28 +115,28 @@ public class AuthController {
      * Refresh JWT token.
      */
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestParam String token) {
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
         try {
+            String token = request.get("token");
             if (jwtUtil.validateToken(token)) {
-                String username = jwtUtil.extractUsername(token);
-                String roles = jwtUtil.extractRoles(token);
+                String username = jwtUtil.getUsernameFromToken(token);
+                List<String> roles = jwtUtil.getRolesFromToken(token);
                 
-                // Generate new token
-                String newJwt = jwtUtil.generateToken(username, roles, null);
+                String newToken = jwtUtil.generateToken(username, roles);
                 
                 return ResponseEntity.ok(new JwtResponse(
-                    newJwt,
+                    newToken,
+                    "Bearer",
                     username,
-                    roles,
-                    jwtExpirationMs / 1000
+                    String.join(",", roles),
+                    jwtUtil.getExpirationFromToken(newToken).getTime() - System.currentTimeMillis()
                 ));
-            } else {
-                return ResponseEntity.badRequest()
-                    .body("Error: Invalid or expired token!");
             }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", "Invalid token for refresh"));
         } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                .body("Error: Token refresh failed - " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("message", "Token refresh failed"));
         }
     }
 

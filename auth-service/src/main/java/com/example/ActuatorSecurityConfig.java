@@ -36,20 +36,17 @@ public class ActuatorSecurityConfig {
    * Main security configuration for auth endpoints.
    */
   @Bean
-  SecurityFilterChain authSecurity(HttpSecurity http) throws Exception {
+  public SecurityFilterChain authSecurity(HttpSecurity http) throws Exception {
     http
-      // Apply to all non-actuator endpoints
-      .securityMatcher("/**")
-      .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/auth/**").permitAll()           // Allow auth endpoints
-        .requestMatchers("/actuator/health").permitAll()   // Allow health checks
-        .anyRequest().authenticated()                      // Secure other endpoints
-      )
-      .sessionManagement(session -> session
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // Stateless JWT
-      )
-      .csrf(csrf -> csrf.disable())                        // Disable CSRF for REST APIs
-      .httpBasic(httpBasic -> httpBasic.disable());       // Disable basic auth
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(authz -> authz
+            .requestMatchers("/auth/login", "/auth/validate").permitAll()
+            .requestMatchers("/auth/me", "/auth/refresh").authenticated()
+            .requestMatchers("/actuator/health").permitAll()
+            .anyRequest().authenticated()
+        )
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     
     return http.build();
   }

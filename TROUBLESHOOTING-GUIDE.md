@@ -455,3 +455,176 @@ docker-compose -f docker-compose.staging.yml logs -f --tail 50
 **Created**: May 30, 2025  
 **Status**: Phase 1 JWT Security - RESOLVED  
 **Next**: Phase 2 Advanced Security Features
+
+---
+
+## 🚨 PARTE 2: PROBLEMI JWT 403 FORBIDDEN
+
+### **6. 🔴 JWT TOKEN VALIDO MA 403 FORBIDDEN SU /auth/me**
+
+#### **Problema Rilevato:**
+```bash
+# Token JWT ottenuto con successo dal login
+TOKEN="eyJhbGciOiJIUzI1NiJ9...cso8DI1eYeNyJOUnWdADzvxGxfAkuVMtWx4x02729lc"
+
+# Ma endpoint /auth/me restituisce 403 Forbidden
+curl -H "Authorization: Bearer $TOKEN" http://localhost:9081/auth/me -v
+# Response: HTTP 403 Forbidden
+# Headers di sicurezza presenti ma content-length = 0
+```
+
+#### **Causa Possibili:**
+1. **JWT Filter non configurato** correttamente per endpoint `/auth/me`
+2. **Security Configuration** blocca l'endpoint nonostante token valido
+3. **Role-based access** non implementato per endpoint protetti
+4. **Gateway JWT Filter** non sta forwardando correttamente l'autorizzazione
+
+#### **Diagnosi Commands:**
+```bash
+# 1. Verifica logs auth-service per errori JWT
+docker logs spring-mono_auth-service_1 --tail 50 | grep -i -E "(jwt|auth|403|forbidden)"
+
+# 2. Test diretto su auth-service (bypass gateway)
+curl -H "Authorization: Bearer $TOKEN" http://localhost:9081/auth/me -v
+
+# 3. Verifica implementazione endpoint /auth/me
+docker exec spring-mono_auth-service_1 find /app -name "AuthController.class"
+
+# 4. Test con altri endpoint protetti
+curl -H "Authorization: Bearer $TOKEN" http://localhost:9081/auth/validate -v
+```
+
+#### **Possibili Soluzioni:**
+##### **Soluzione 1: Verifica AuthController.java**
+```java
+// Verificare che l'endpoint /auth/me sia implementato
+@RestController
+@RequestMapping("/auth")
+public class AuthController {
+    
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        // Implementazione mancante o errata
+    }
+}
+```
+
+##### **Soluzione 2: Security Configuration**
+```java
+// Verificare SecurityConfig per permettere endpoint autenticati
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(authz -> authz
+            .requestMatchers("/auth/login", "/auth/validate").permitAll()
+            .requestMatchers("/auth/me").authenticated()  // DEVE essere authenticated, non permitAll
+            .anyRequest().authenticated()
+        );
+    }
+}
+```
+
+##### **Soluzione 3: JWT Filter Chain**
+```bash
+# Verifica che JWT filter sia nella chain corretta
+docker logs spring-mono_auth-service_1 | grep -i "filter"
+```
+
+---
+
+### **7. 🔴 RATE LIMITING NON FUNZIONANTE**
+
+#### **Problema Rilevato:**
+```bash
+# Rate limiting test mostra tutti 403 invece di progressione 200 -> 429
+for i in {1..10}; do
+  curl -s -o /dev/null -w "Request $i: %{http_code}\n" http://localhost:9081/auth/me \
+    -H "Authorization: Bearer $TOKEN"
+done
+
+# Output: Tutti Request X: 403 (dovrebbe essere 200, 200, 200... poi 429)
+```
+
+#### **Causa:**
+Il **403 Forbidden** impedisce di testare correttamente il rate limiting perché le richieste vengono bloccate prima di raggiungere il rate limiter.
+
+#### **Diagnosi Commands:**
+```bash
+# 1. Verifica Redis per rate limiting
+docker exec spring-mono_redis_1 redis-cli ping
+docker exec spring-mono_redis_1 redis-cli keys "*rate*"
+
+# 2. Test rate limiting su endpoint funzionante (login)
+for i in {1..5}; do
+  response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:9081/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"username":"test","password":"wrong"}')
+  echo "Request $i: HTTP $response"
+  sleep 0.1
+done
+
+# 3. Verifica configurazione rate limiting
+docker logs spring-mono_auth-service_1 | grep -i "redis\|rate"
+```
+
+---
+
+## 🔧 IMMEDIATE FIX ACTIONS
+
+### **Step 1: Verifica Implementazione /auth/me**
+```bash
+# 1. Controlla se AuthController ha il metodo /me
+docker exec spring-mono_auth-service_1 find /app -name "*.class" | grep Auth
+
+# 2. Verifica logs durante test
+docker logs spring-mono_auth-service_1 --tail 20 &
+curl -H "Authorization: Bearer $TOKEN" http://localhost:9081/auth/me
+```
+
+### **Step 2: Test Endpoint Alternativi**
+```bash
+# Test /auth/validate che dovrebbe funzionare
+curl -X POST http://localhost:9081/auth/validate \
+  -H "Content-Type: application/json" \
+  -d "{\"token\":\"$TOKEN\"}"
+
+# Se validate funziona, il problema è specifico di /auth/me
+```
+
+### **Step 3: Rebuild se Necessario**
+```bash
+# Se il problema è nel codice, rebuild
+docker-compose -f docker-compose.staging.yml restart auth-service
+docker logs spring-mono_auth-service_1 --tail 30
+```
+
+---
+
+## 📊 STATUS CHECK AGGIORNATO
+
+### **✅ Funzionante:**
+- JWT Login: ✅ **200 OK** - Token generato correttamente
+- Container Health: ✅ **UP** - Tutti i servizi attivi
+- Database: ✅ **Connected** - PostgreSQL operativo
+- YAML Syntax: ✅ **Valid** - Docker compose corretto
+
+### **❌ Da Risolvere:**
+- JWT /auth/me: ❌ **403 Forbidden** - Endpoint protetto non accessibile
+- Rate Limiting: ❌ **Non testabile** - Bloccato da 403 su endpoints protetti
+- Gateway JWT: ❓ **Da verificare** - Possibile problema nel forwarding
+
+### **🔄 Test Priority:**
+1. **Priorità 1**: Fix /auth/me endpoint (403 → 200)
+2. **Priorità 2**: Verifica altri endpoints protetti
+3. **Priorità 3**: Test rate limiting su endpoints funzionanti
+4. **Priorità 4**: Gateway JWT routing validation
+
+---
+
+**Updated**: May 30, 2025 - 21:35 UTC  
+**VM Test Status**: JWT Login ✅ | Protected Endpoints ❌  
+**Next Action**: Investigate AuthController /me endpoint implementation
