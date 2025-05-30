@@ -1,4 +1,46 @@
-.idea/
-*.iml
+# Security Files - NEVER commit these!
+.env
+*.env
+.env.local
+.env.production
+
+# JWT Secrets
+jwt.secret
+keystore.p12
+
+# Database
+*.db
+*.sqlite
+
+# Maven
 target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Gradle
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Docker
+.dockerignore
+
+# Backup files
 backup/*.tar
