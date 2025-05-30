@@ -4,9 +4,11 @@ import com.example.dto.JwtResponse;
 import com.example.dto.LoginRequest;
 import com.example.security.JwtUtil;
 import com.example.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -70,9 +72,8 @@ public class AuthController {
     @PostMapping("/validate")
     public ResponseEntity<?> validateToken(@RequestBody Map<String, String> request) {
         try {
-            String token = request.get("token");
-            if (jwtUtil.validateToken(token)) {
-                String username = jwtUtil.getUsernameFromToken(token);
+            String token = request.get("token");            if (jwtUtil.validateToken(token)) {
+                String username = jwtUtil.extractUsername(token);
                 return ResponseEntity.ok(Map.of(
                     "valid", true,
                     "username", username
@@ -90,21 +91,19 @@ public class AuthController {
      * Refresh JWT token.
      */
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {
-        try {
+    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request) {        try {
             String token = request.get("token");
             if (jwtUtil.validateToken(token)) {
-                String username = jwtUtil.getUsernameFromToken(token);
-                List<String> roles = jwtUtil.getRolesFromToken(token);
+                String username = jwtUtil.extractUsername(token);
+                String roles = jwtUtil.extractRoles(token);
                 
-                String newToken = jwtUtil.generateToken(username, roles);
+                String newToken = jwtUtil.generateToken(username, roles, null);
                 
                 return ResponseEntity.ok(new JwtResponse(
                     newToken,
-                    "Bearer",
                     username,
-                    String.join(",", roles),
-                    jwtUtil.getExpirationFromToken(newToken).getTime() - System.currentTimeMillis()
+                    roles,
+                    jwtExpirationMs / 1000 // Convert to seconds
                 ));
             }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -118,12 +117,11 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
         try {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String authHeader = request.getHeader("Authorization");            if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
                 if (jwtUtil.validateToken(token)) {
-                    String username = jwtUtil.getUsernameFromToken(token);
-                    List<String> roles = jwtUtil.getRolesFromToken(token);
+                    String username = jwtUtil.extractUsername(token);
+                    String roles = jwtUtil.extractRoles(token);
                     
                     return ResponseEntity.ok(Map.of(
                         "username", username,
