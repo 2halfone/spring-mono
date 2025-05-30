@@ -35,12 +35,11 @@ public class HttpsRedirectConfig {
     public WebFilter httpsRedirectFilter() {
         return (ServerWebExchange exchange, WebFilterChain chain) -> {
             String scheme = exchange.getRequest().getURI().getScheme();
-            
-            // If request is HTTP and SSL is enabled, redirect to HTTPS
+              // If request is HTTP and SSL is enabled, redirect to HTTPS
             if ("http".equals(scheme)) {
-                String httpsUrl = exchange.getRequest().getURI().toString().replaceFirst("http://", "https://");
+                String baseHttpsUrl = exchange.getRequest().getURI().toString().replaceFirst("http://", "https://");
                 // Change port from 8080 to 8443 for HTTPS
-                httpsUrl = httpsUrl.replaceFirst(":8080", ":8443");
+                final String httpsUrl = baseHttpsUrl.replaceFirst(":8080", ":8443");
                 
                 return exchange.getResponse().writeWith(
                     Mono.fromRunnable(() -> {
