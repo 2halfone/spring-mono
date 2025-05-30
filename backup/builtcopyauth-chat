@@ -68,4 +68,4 @@ jobs:
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
             frazerfrax1@${{ secrets.DEPLOY_HOST }} \
-            "cd ~/spring-boot-template && docker compose pull && docker compose up -d --remove-orphans"
+            "cd ~/spring-microservices && docker compose pull && docker compose up -d --remove-orphans"

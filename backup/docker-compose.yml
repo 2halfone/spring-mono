@@ -1,8 +1,8 @@
-name: spring-boot-template
+name: spring-microservices
 services:
   app:
     build:
-      context: /home/frazerfrax1/spring-boot-template
+      context: /home/frazerfrax1/spring-microservices
       dockerfile: Dockerfile
     container_name: spring-template-app
     depends_on:
@@ -37,7 +37,7 @@ services:
         volume: {}
 networks:
   default:
-    name: spring-boot-template_default
+    name: spring-microservices_default
 volumes:
   postgres-data:
-    name: spring-boot-template_postgres-data
+    name: spring-microservices_postgres-data
