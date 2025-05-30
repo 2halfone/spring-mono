@@ -77,6 +77,6 @@ jobs:
             -o StrictHostKeyChecking=no \
             -o UserKnownHostsFile=/dev/null \
             frazerfrax1@${{ secrets.DEPLOY_HOST }} \
-            "cd /home/frazerfrax1/staging && \
+            "cd /home/frazerfrax1/spring-mono && \
              docker compose -f docker-compose.staging.yml pull && \
              docker compose -f docker-compose.staging.yml up -d --remove-orphans"
