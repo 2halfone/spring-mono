@@ -13,11 +13,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -28,22 +34,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         String authHeader = request.getHeader("Authorization");
         String token = null;
-        String username = null;
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        String username = null;        if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
             try {
-                username = jwtUtil.getUsernameFromToken(token);
+                username = jwtUtil.extractUsername(token);
             } catch (Exception e) {
                 logger.error("Cannot get username from token: " + e.getMessage());
             }
-        }
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        }        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             if (jwtUtil.validateToken(token)) {
-                List<String> roles = jwtUtil.getRolesFromToken(token);
+                String rolesString = jwtUtil.extractRoles(token);
+                List<String> roles = rolesString != null ? 
+                    Arrays.asList(rolesString.split(",")) : 
+                    Arrays.asList("USER");
                 List<SimpleGrantedAuthority> authorities = roles.stream()
-                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role.trim()))
                         .collect(Collectors.toList());
 
                 UsernamePasswordAuthenticationToken authToken = 
