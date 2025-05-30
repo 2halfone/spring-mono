@@ -6,10 +6,9 @@ services:
     restart: always
     environment:
       POSTGRES_DB: mydb
-      POSTGRES_USER: springuser
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+      POSTGRES_USER: springuser      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
     ports:
-      - "15432:15432"
+      - "15432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -45,10 +44,11 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydb
       SPRING_DATASOURCE_USERNAME: springuser
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
-      JWT_SECRET: ${JWT_SECRET:-mySecretKey123456789012345678901234567890}
-      JWT_ISSUER: ${JWT_ISSUER:-spring-microservices}  gateway:
-    build: ./gateway
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-change_me}      JWT_SECRET: ${JWT_SECRET:-mySecretKey123456789012345678901234567890}
+      JWT_ISSUER: ${JWT_ISSUER:-spring-microservices}
+
+  gateway:
+    build: ./gateway/initial
     depends_on:
       - auth-service
       - chat-service
