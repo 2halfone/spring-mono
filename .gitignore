@@ -1,12 +1,23 @@
-# Security Files - NEVER commit these!
+# =================================================================
+# SECURITY FILES - NEVER COMMIT THESE!
+# =================================================================
 .env
 *.env
 .env.local
 .env.production
+.env.staging
 
-# JWT Secrets
+# JWT & SSL Secrets
 jwt.secret
-keystore.p12
+*.key
+*.p12
+keystore.*
+truststore.*
+ssl/
+
+# Database credentials & files
+database.properties
+*.secret
 
 # Database
 *.db
