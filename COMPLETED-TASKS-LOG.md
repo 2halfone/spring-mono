@@ -144,15 +144,18 @@ SECRETS:           Hardcoded → Environment based (✅ SECURE)
 
 ## ➡️ **NEXT PHASE STATUS**
 
-### **🔄 PHASE 2: DAY 3 DATABASE INTEGRATION** ❌ **PENDING**
-```
-❌ DA FARE:
-- Database User Entity implementation
-- Password encryption con BCrypt  
-- User roles management
-- Database integration testing
-- User repository & service layer
-```
+### **🔄 PHASE 2: DAY 3 DATABASE INTEGRATION** 🚧 **IN PROGRESS** (1/5 STEPS COMPLETED)
+
+**✅ COMPLETED STEPS:**
+- STEP 2.1: User Entity & Repository Implementation ✅
+
+**🚧 CURRENT PRIORITY:**
+- STEP 2.2: Database Connection & Configuration ❌ NEXT
+
+**📋 REMAINING STEPS:**
+- STEP 2.3: User Service with BCrypt Password Encryption ❌
+- STEP 2.4: User Roles Management System ❌ 
+- STEP 2.5: Database Integration Testing ❌
 
 ### **🔄 PHASE 3: DAY 4 PRODUCTION HARDENING** ❌ **PENDING**
 ```
@@ -180,3 +183,41 @@ SECRETS:           Hardcoded → Environment based (✅ SECURE)
 **PHASE 1 COMPLETATA con successo in 1 giorno invece di 2! ⚡**
 
 **Ready to proceed to PHASE 2: Database Integration** 🚀
+
+---
+
+## 🎯 **PHASE 2: DAY 3 DATABASE INTEGRATION** 🚧 **IN PROGRESS**
+
+#### **STEP 2.1: User Entity & Repository Implementation** ✅ **DONE**
+```
+AZIONE ESEGUITA:
+- Implementata User Entity con JPA annotations complete
+- Creato Role enum con USER, MODERATOR, ADMIN
+- Implementato UserRepository con query methods avanzati
+- Verificata compilazione auth-service
+
+FILES CREATI:
+✅ src/main/java/com/example/model/User.java       # JPA Entity completa
+✅ src/main/java/com/example/model/Role.java       # Role enum system
+✅ src/main/java/com/example/repository/UserRepository.java  # Repository layer
+
+FEATURES IMPLEMENTATE:
+✅ JPA Entity con validation constraints (@NotBlank, @Email, @Size)
+✅ Audit fields (CreatedDate, LastModifiedDate) 
+✅ Security status fields (enabled, accountNonExpired, credentialsNonExpired, accountNonLocked)
+✅ Role-based authorization con @ElementCollection
+✅ 15+ specialized query methods nel repository
+✅ Authentication queries (findByUsername, findByEmail)
+✅ Role-based queries (findByRolesContaining, countByRolesContaining)
+✅ Account status queries (findByEnabledTrue, findByAccountNonExpiredTrue)
+✅ Search functionality (findByUsernameContainingIgnoreCase)
+
+COMANDO VERIFICA:
+cd auth-service; .\mvnw clean compile           # ✅ BUILD SUCCESS
+
+RISULTATO:
+✅ User Entity completamente implementata con security features
+✅ Repository layer pronto per operazioni CRUD avanzate
+✅ Role system implementato con 3 livelli di autorizzazione
+✅ Compilazione auth-service verificata e funzionante
+```
