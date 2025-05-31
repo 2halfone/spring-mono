@@ -1,5 +1,6 @@
-FROM openjdk:11-jre-slim
-VOLUME /tmp
-ARG JAR_FILE=target/gateway-service-*.jar
-COPY ${JAR_FILE} app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY target/*.jar app.jar
+COPY src/main/resources/application.yml application.yml
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]

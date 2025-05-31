@@ -1,2 +1,27 @@
 server:
   port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,gateway
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://auth-service:8080
+          predicates:
+            - Path=/auth/**
+        - id: chat-service
+          uri: http://chat-service:8080
+          predicates:
+            - Path=/chat/**
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
