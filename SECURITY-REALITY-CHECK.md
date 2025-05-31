@@ -331,7 +331,7 @@ La maggior parte del lavoro JWT è già fatto e funzionante.
 - [ ] **TESTARE** implementazione JWT esistente (probabilmente già funziona)
 - [ ] **DOCUMENTARE** endpoints esistenti nel README
 - [ ] **OTTIMIZZARE** configurazione Spring Security esistente
-- [ ] **PIANIFICARE** rimozione shared module (NON urgente)
+- [ ] **PIANIFICARE** rimozione shared module (NON urgente).
 
 #### **🟡 Day 3-4: Database Integration (ENHANCEMENT, NON CORE)**
 ```
