@@ -2,8 +2,12 @@ package com.example.controller;
 
 import com.example.dto.JwtResponse;
 import com.example.dto.LoginRequest;
+import com.example.dto.UserRegistrationRequest;
+import com.example.dto.UserResponse;
+import com.example.model.User;
 import com.example.security.JwtUtil;
 import com.example.service.AuthService;
+import com.example.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Authentication Controller for JWT token generation.
- * Only handles authentication logic - token generation and refresh.
+ * Authentication Controller for JWT token generation and user management.
+ * Handles authentication, registration, and user profile operations.
  */
 @RestController
 @RequestMapping("/auth")
@@ -26,6 +30,9 @@ public class AuthController {
 
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -112,21 +119,35 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("message", "Token refresh failed"));
         }
-    }
-
-    @GetMapping("/me")
+    }    @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
         try {
-            String authHeader = request.getHeader("Authorization");            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
                 if (jwtUtil.validateToken(token)) {
                     String username = jwtUtil.extractUsername(token);
-                    String roles = jwtUtil.extractRoles(token);
                     
+                    // Try to get full user details from database
+                    try {
+                        User user = userService.findByUsername(username)
+                            .orElse(userService.findByEmail(username).orElse(null));
+                        
+                        if (user != null) {
+                            // Return full user profile from database
+                            return ResponseEntity.ok(UserResponse.fromUser(user));
+                        }
+                    } catch (Exception e) {
+                        // Continue to fallback
+                    }
+                    
+                    // Fallback to token-based info for backward compatibility
+                    String roles = jwtUtil.extractRoles(token);
                     return ResponseEntity.ok(Map.of(
                         "username", username,
                         "roles", roles,
-                        "authenticated", true
+                        "authenticated", true,
+                        "source", "token" // Indicates this is fallback data
                     ));
                 }
             }
@@ -136,6 +157,57 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("authenticated", false, "message", "Authentication failed"));
         }
+    }
+
+    /**
+     * Register a new user
+     */
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationRequest signUpRequest) {
+        try {
+            // Create new user account
+            User user = userService.registerUser(
+                signUpRequest.getUsername(), 
+                signUpRequest.getEmail(), 
+                signUpRequest.getPassword(),
+                signUpRequest.getRole()
+            );
+
+            // Return user data (without password)
+            UserResponse userResponse = UserResponse.fromUser(user);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "User registered successfully!",
+                "user", userResponse
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Check username availability
+     */
+    @GetMapping("/check-username/{username}")
+    public ResponseEntity<?> checkUsername(@PathVariable String username) {
+        boolean available = userService.isUsernameAvailable(username);
+        return ResponseEntity.ok(Map.of(
+            "username", username,
+            "available", available
+        ));
+    }
+
+    /**
+     * Check email availability
+     */
+    @GetMapping("/check-email/{email}")
+    public ResponseEntity<?> checkEmail(@PathVariable String email) {
+        boolean available = userService.isEmailAvailable(email);
+        return ResponseEntity.ok(Map.of(
+            "email", email,
+            "available", available
+        ));
     }
 
     // Inner classes for responses
