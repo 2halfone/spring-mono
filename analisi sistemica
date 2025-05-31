@@ -1,0 +1,54 @@
+🔍 STEP 1: ANALISI SISTEMATICA DEL CODICE REALE
+Analisi Directory Structure Effettiva:
+
+
+# Verifichiamo la struttura reale
+find . -name "*.java" -type f | head -20
+find . -name "*.properties" -type f | head -10
+find . -name "*.yml" -type f | head -10
+
+Analisi Contenuto Applicazioni Reali:
+
+# Verifichiamo le main classes effettive
+echo "=== AUTH-SERVICE MAIN CLASS ==="
+cat auth-service/src/main/java/com/example/AuthServiceApplication.java
+
+echo "=== CHAT-SERVICE MAIN CLASS ==="
+cat chat-service/src/main/java/com/example/MovieWatchlistApplication.java
+
+echo "=== GATEWAY MAIN CLASS ==="
+find gateway -name "*Application.java" -exec cat {} \;
+
+
+Verifica Controllers Effettivi:
+# Cerchiamo i controller reali
+echo "=== CONTROLLERS AUTH-SERVICE ==="
+find auth-service -name "*Controller.java" -exec basename {} \;
+
+echo "=== CONTROLLERS CHAT-SERVICE ==="
+find chat-service -name "*Controller.java" -exec basename {} \;
+
+echo "=== CONTROLLERS GATEWAY ==="
+find gateway -name "*Controller.java" -exec basename {} \;
+
+Verifica Configurazioni Database Reali:
+# Verifichiamo le configurazioni database effettive
+echo "=== DATABASE CONFIGS AUTH-SERVICE ==="
+cat auth-service/src/main/resources/application.properties | grep -E "(datasource|jpa|h2|postgres)"
+
+echo "=== DATABASE CONFIGS CHAT-SERVICE ==="
+find chat-service -name "application*" -exec grep -l "datasource\|jpa\|h2\|postgres" {} \;
+
+Verifica Security Configurations Reali:
+# Cerchiamo le security config effettive
+echo "=== SECURITY CONFIGS ==="
+find . -name "*Security*.java" -exec echo "FILE: {}" \; -exec head -10 {} \;
+
+Verifica pom.xml Dependencies Reali:
+# Analizziamo le dipendenze effettive
+echo "=== AUTH-SERVICE DEPENDENCIES ==="
+grep -A 5 -B 1 "spring-boot-starter" auth-service/pom.xml
+
+echo "=== CHAT-SERVICE DEPENDENCIES ==="
+grep -A 5 -B 1 "spring-boot-starter" chat-service/pom.xml
+
