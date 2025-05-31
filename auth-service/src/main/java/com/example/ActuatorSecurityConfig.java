@@ -5,26 +5,18 @@ import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointR
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import com.example.security.JwtAuthenticationFilter;
 
 /**
- * Security configuration for auth-service.
- * Configures JWT-based authentication endpoints.
+ * Actuator-specific security configuration.
+ * Only handles health endpoint security, main security is in SecurityConfig.
  */
 @Configuration
-@EnableWebSecurity
 public class ActuatorSecurityConfig {
 
   /**
-   * Security configuration for actuator endpoints.
+   * Security configuration for actuator endpoints only.
+   * Allows anonymous access to health endpoint.
    */
   @Bean
   SecurityFilterChain actuatorSecurity(HttpSecurity http) throws Exception {
@@ -36,39 +28,5 @@ public class ActuatorSecurityConfig {
         )
       .csrf(csrf -> csrf.disable());     // Disable CSRF for actuator
     return http.build();
-  }
-
-  /**
-   * Main security configuration for auth endpoints.
-   */
-  @Bean
-  public SecurityFilterChain authSecurity(HttpSecurity http) throws Exception {
-    http
-        .csrf(csrf -> csrf.disable())
-        .authorizeHttpRequests(authz -> authz
-            .requestMatchers("/auth/login", "/auth/validate").permitAll()
-            .requestMatchers("/auth/me", "/auth/refresh").authenticated()
-            .requestMatchers("/actuator/health").permitAll()
-            .anyRequest().authenticated()
-        )
-        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
-    
-    return http.build();
-  }
-
-  @Bean
-  public JwtAuthenticationFilter jwtAuthenticationFilter() {
-    return new JwtAuthenticationFilter();
-  }
-
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder();
-  }
-
-  @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-    return config.getAuthenticationManager();
   }
 }
