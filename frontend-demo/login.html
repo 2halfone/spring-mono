@@ -207,19 +207,12 @@
                 <li><strong>user</strong> / user123 (Utente standard)</li>
                 <li><strong>test</strong> / test123 (Test)</li>
             </ul>
-        </div>
-    </div>
+        </div>    </div>
 
-    <script>
-        // Configurazione API
-        const API_CONFIG = {
-            AUTH_SERVICE: 'http://localhost:9081',
-            ENDPOINTS: {
-                LOGIN: '/auth/login',
-                PROFILE: '/auth/me'
-            }
-        };
-
+    <!-- Scripts -->
+    <script src="auth-client.js"></script>
+    <!-- Uncomment per VM deployment -->
+    <script src="config-vm.js"></script>    <script>
         // Elementi DOM
         const loginForm = document.getElementById('loginForm');
         const messageDiv = document.getElementById('message');
@@ -239,41 +232,24 @@
             loadingDiv.style.display = show ? 'block' : 'none';
             loginBtn.disabled = show;
             loginBtn.textContent = show ? 'Connessione...' : '🚪 Accedi';
-        }
-
-        // Funzione di login
+        }        // Funzione di login
         async function login(username, password) {
             setLoading(true);
             
             try {
-                const response = await fetch(`${API_CONFIG.AUTH_SERVICE}${API_CONFIG.ENDPOINTS.LOGIN}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    // Salva dati utente
-                    localStorage.setItem('authToken', data.token);
-                    localStorage.setItem('refreshToken', data.refreshToken);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    
+                const data = await springAuthClient.login(username, password);
+                
+                if (data) {
                     showMessage('✅ Login effettuato con successo! Reindirizzamento...', 'success');
                     
                     // Reindirizza dopo 2 secondi
                     setTimeout(() => {
                         window.location.href = 'dashboard.html';
                     }, 2000);
-                } else {
-                    showMessage(`❌ ${data.message || 'Credenziali non valide'}`);
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                showMessage(`❌ Errore di connessione: ${error.message}`);
+                showMessage(`❌ ${error.message || 'Errore di connessione'}`);
             } finally {
                 setLoading(false);
             }
@@ -292,10 +268,8 @@
             }
 
             await login(username, password);
-        });
-
-        // Verifica se già loggato
-        if (localStorage.getItem('authToken')) {
+        });        // Verifica se già loggato
+        if (springAuthClient.isAuthenticated()) {
             showMessage('ℹ️ Sei già autenticato. Reindirizzamento...', 'success');
             setTimeout(() => {
                 window.location.href = 'dashboard.html';
@@ -311,11 +285,11 @@
         // Test connessione al caricamento
         window.addEventListener('load', async () => {
             try {
-                const response = await fetch(`${API_CONFIG.AUTH_SERVICE}/actuator/health`);
-                if (response.ok) {
+                const health = await springAuthClient.checkServiceHealth('auth');
+                if (health.status === 'online') {
                     console.log('✅ Auth Service online');
                 } else {
-                    showMessage('⚠️ Auth Service non raggiungibile. Verifica che sia avviato su porta 9081.');
+                    showMessage('⚠️ Auth Service non raggiungibile. Verifica che sia avviato.');
                 }
             } catch (error) {
                 showMessage('⚠️ Impossibile connettersi al server. Verifica che l\'applicazione sia avviata.');

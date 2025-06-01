@@ -8,9 +8,9 @@
 // Configurazione API centralizzata - VM Configuration
 // Per testare in locale, cambiare gli IP con 'localhost'
 const API_CONFIG = {
-    AUTH_SERVICE: 'http://localhost:9081',
-    CHAT_SERVICE: 'http://localhost:9082', 
-    GATEWAY: 'http://localhost:9080',
+    AUTH_SERVICE: 'http://192.168.1.146:9081',
+    CHAT_SERVICE: 'http://192.168.1.146:9082', 
+    GATEWAY: 'http://192.168.1.146:9080',
     ENDPOINTS: {
         // Auth endpoints
         LOGIN: '/auth/login',
