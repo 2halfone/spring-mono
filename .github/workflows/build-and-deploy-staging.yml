@@ -5,7 +5,8 @@ on:
     branches:
       - staging
 
-jobs:  build:
+jobs:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
