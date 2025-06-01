@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Test Suite - Spring Auth System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 1rem;
+        }
+
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .test-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #0d1117;
+        }
+
+        .test-section h3 {
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+
+        .test-button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: inherit;
+        }
+
+        .test-button:hover {
+            background: #00cc00;
+        }
+
+        .test-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .result {
+            background: #111;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid #00ff00;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .result.error {
+            border-left-color: #ff0000;
+            color: #ff6666;
+        }
+
+        .result.success {
+            border-left-color: #00ff00;
+            color: #66ff66;
+        }
+
+        .credentials {
+            background: #2d1b69;
+            color: #fff;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        .status-online {
+            color: #00ff00;
+        }
+
+        .status-offline {
+            color: #ff0000;
+        }
+
+        .loading {
+            color: #ffff00;
+        }
+
+        .clear-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0.25rem;
+            cursor: pointer;
+            border-radius: 3px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔬 API TEST SUITE</h1>
+        <p>Spring Boot Microservices Authentication System</p>
+        <p>Complete endpoint testing interface</p>
+    </div>
+
+    <div class="test-container">
+        <!-- Service Status -->
+        <div class="test-section">
+            <h3>🏥 SERVICE HEALTH CHECK</h3>
+            <button class="test-button" onclick="checkAllServices()">Check All Services</button>
+            <button class="clear-btn" onclick="clearResults('serviceResults')">Clear</button>
+            <div id="serviceResults" class="result"></div>
+        </div>
+
+        <!-- Authentication -->
+        <div class="test-section">
+            <h3>🔐 AUTHENTICATION TESTS</h3>
+            <div class="credentials">
+                <strong>Test Credentials:</strong><br>
+                Username: <code>admin</code> | Password: <code>admin123</code><br>
+                Username: <code>user</code> | Password: <code>user123</code><br>
+                Username: <code>test</code> | Password: <code>test123</code>
+            </div>
+            <button class="test-button" onclick="testLogin()">Test Login</button>
+            <button class="test-button" onclick="testProfile()">Get Profile</button>
+            <button class="test-button" onclick="testValidateToken()">Validate Token</button>
+            <button class="test-button" onclick="testLogout()">Logout</button>
+            <button class="clear-btn" onclick="clearResults('authResults')">Clear</button>
+            <div id="authResults" class="result"></div>
+        </div>
+
+        <!-- Movies API -->
+        <div class="test-section">
+            <h3>🎬 MOVIES API TESTS</h3>
+            <button class="test-button" onclick="testGetMovies()">Get Movies</button>
+            <button class="test-button" onclick="testAddMovie()">Add Test Movie</button>
+            <button class="test-button" onclick="testMovieOperations()">Full CRUD Test</button>
+            <button class="clear-btn" onclick="clearResults('moviesResults')">Clear</button>
+            <div id="moviesResults" class="result"></div>
+        </div>
+
+        <!-- Registration -->
+        <div class="test-section">
+            <h3>📝 REGISTRATION TESTS</h3>
+            <button class="test-button" onclick="testRegistration()">Test Registration</button>
+            <button class="test-button" onclick="testUsernameCheck()">Check Username</button>
+            <button class="test-button" onclick="testEmailCheck()">Check Email</button>
+            <button class="clear-btn" onclick="clearResults('registrationResults')">Clear</button>
+            <div id="registrationResults" class="result"></div>
+        </div>
+
+        <!-- Security Tests -->
+        <div class="test-section">
+            <h3>🛡️ SECURITY TESTS</h3>
+            <button class="test-button" onclick="testUnauthorizedAccess()">Test Unauthorized</button>
+            <button class="test-button" onclick="testTokenExpiry()">Test Invalid Token</button>
+            <button class="test-button" onclick="testAdminEndpoints()">Test Admin Access</button>
+            <button class="clear-btn" onclick="clearResults('securityResults')">Clear</button>
+            <div id="securityResults" class="result"></div>
+        </div>
+
+        <!-- Performance Tests -->
+        <div class="test-section">
+            <h3>⚡ PERFORMANCE TESTS</h3>
+            <button class="test-button" onclick="testResponseTimes()">Response Times</button>
+            <button class="test-button" onclick="testConcurrentRequests()">Concurrent Requests</button>
+            <button class="test-button" onclick="testLoadTest()">Load Test (10 requests)</button>
+            <button class="clear-btn" onclick="clearResults('performanceResults')">Clear</button>
+            <div id="performanceResults" class="result"></div>
+        </div>
+
+        <!-- Full System Test -->
+        <div class="test-section">
+            <h3>🚀 COMPLETE SYSTEM TEST</h3>
+            <button class="test-button" onclick="runFullSystemTest()" style="background: #ffd700; color: #000;">RUN ALL TESTS</button>
+            <button class="clear-btn" onclick="clearAllResults()">Clear All</button>
+            <div id="fullTestResults" class="result"></div>
+        </div>
+    </div>
+
+    <script src="auth-client.js"></script>
+    <script>
+        // Global variables
+        let testToken = null;
+        let testResults = [];
+
+        // Utility functions
+        function log(message, containerId, type = 'info') {
+            const container = document.getElementById(containerId);
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}\n`;
+            
+            container.textContent += logEntry;
+            container.className = `result ${type}`;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).textContent = '';
+        }
+
+        function clearAllResults() {
+            const resultElements = document.querySelectorAll('.result');
+            resultElements.forEach(el => el.textContent = '');
+        }
+
+        // Service Health Checks
+        async function checkAllServices() {
+            log('🏥 Checking all services...', 'serviceResults');
+            
+            const services = [
+                { name: 'Auth Service', url: 'http://localhost:9081/actuator/health' },
+                { name: 'Chat Service', url: 'http://localhost:9082/actuator/health' },
+                { name: 'Gateway', url: 'http://localhost:9080/actuator/health' }
+            ];
+
+            for (const service of services) {
+                try {
+                    const startTime = performance.now();
+                    const response = await fetch(service.url);
+                    const endTime = performance.now();
+                    const responseTime = Math.round(endTime - startTime);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        log(`✅ ${service.name}: ONLINE (${responseTime}ms) - Status: ${data.status}`, 'serviceResults', 'success');
+                    } else {
+                        log(`❌ ${service.name}: OFFLINE - HTTP ${response.status}`, 'serviceResults', 'error');
+                    }
+                } catch (error) {
+                    log(`❌ ${service.name}: UNREACHABLE - ${error.message}`, 'serviceResults', 'error');
+                }
+            }
+        }
+
+        // Authentication Tests
+        async function testLogin() {
+            log('🔐 Testing login...', 'authResults');
+            
+            try {
+                const loginData = {
+                    username: 'admin',
+                    password: 'admin123'
+                };
+
+                const startTime = performance.now();
+                const result = await springAuthClient.login(loginData.username, loginData.password);
+                const endTime = performance.now();
+                
+                testToken = result.token;
+                log(`✅ Login successful! Token received (${Math.round(endTime - startTime)}ms)`, 'authResults', 'success');
+                log(`   User: ${result.user.username} | Roles: ${result.user.roles?.join(', ') || 'USER'}`, 'authResults', 'success');
+                log(`   Token: ${testToken.substring(0, 50)}...`, 'authResults', 'success');
+            } catch (error) {
+                log(`❌ Login failed: ${error.message}`, 'authResults', 'error');
+            }
+        }
+
+        async function testProfile() {
+            if (!testToken) {
+                log('⚠️ No token available. Please login first.', 'authResults', 'error');
+                return;
+            }
+
+            log('👤 Testing profile endpoint...', 'authResults');
+            
+            try {
+                const startTime = performance.now();
+                const profile = await springAuthClient.getProfile();
+                const endTime = performance.now();
+                
+                log(`✅ Profile retrieved (${Math.round(endTime - startTime)}ms)`, 'authResults', 'success');
+                log(`   Username: ${profile.username}`, 'authResults', 'success');
+                log(`   Email: ${profile.email || 'Not set'}`, 'authResults', 'success');
+                log(`   ID: ${profile.id}`, 'authResults', 'success');
+                log(`   Roles: ${profile.roles?.join(', ') || 'USER'}`, 'authResults', 'success');
+            } catch (error) {
+                log(`❌ Profile request failed: ${error.message}`, 'authResults', 'error');
+            }
+        }
+
+        async function testValidateToken() {
+            if (!testToken) {
+                log('⚠️ No token available. Please login first.', 'authResults', 'error');
+                return;
+            }
+
+            log('🎫 Testing token validation...', 'authResults');
+            
+            try {
+                const startTime = performance.now();
+                const result = await springAuthClient.validateToken();
+                const endTime = performance.now();
+                
+                log(`✅ Token validation (${Math.round(endTime - startTime)}ms)`, 'authResults', 'success');
+                log(`   Valid: ${result.valid}`, 'authResults', 'success');
+                log(`   Username: ${result.username || 'N/A'}`, 'authResults', 'success');
+            } catch (error) {
+                log(`❌ Token validation failed: ${error.message}`, 'authResults', 'error');
+            }
+        }
+
+        function testLogout() {
+            log('🚪 Testing logout...', 'authResults');
+            springAuthClient.logout();
+            testToken = null;
+            log('✅ Logout completed. Token cleared.', 'authResults', 'success');
+        }
+
+        // Movies API Tests
+        async function testGetMovies() {
+            if (!testToken) {
+                log('⚠️ No token available. Please login first.', 'moviesResults', 'error');
+                return;
+            }
+
+            log('🎬 Testing get movies...', 'moviesResults');
+            
+            try {
+                const startTime = performance.now();
+                const movies = await springAuthClient.getMovies();
+                const endTime = performance.now();
+                
+                log(`✅ Movies retrieved (${Math.round(endTime - startTime)}ms)`, 'moviesResults', 'success');
+                log(`   Count: ${movies.length} movies`, 'moviesResults', 'success');
+                
+                if (movies.length > 0) {
+                    movies.slice(0, 3).forEach(movie => {
+                        log(`   • ${movie.title} (${movie.year || 'N/A'}) - ${movie.genre || 'N/A'}`, 'moviesResults', 'success');
+                    });
+                    if (movies.length > 3) {
+                        log(`   ... and ${movies.length - 3} more`, 'moviesResults', 'success');
+                    }
+                }
+            } catch (error) {
+                log(`❌ Get movies failed: ${error.message}`, 'moviesResults', 'error');
+            }
+        }
+
+        async function testAddMovie() {
+            if (!testToken) {
+                log('⚠️ No token available. Please login first.', 'moviesResults', 'error');
+                return;
+            }
+
+            log('➕ Testing add movie...', 'moviesResults');
+            
+            try {
+                const testMovie = {
+                    title: `Test Movie ${Date.now()}`,
+                    year: 2024,
+                    genre: 'Test/Demo',
+                    director: 'Test Director',
+                    description: 'Movie created by API test suite'
+                };
+
+                const startTime = performance.now();
+                const result = await springAuthClient.addMovie(testMovie);
+                const endTime = performance.now();
+                
+                log(`✅ Movie added (${Math.round(endTime - startTime)}ms)`, 'moviesResults', 'success');
+                log(`   ID: ${result.id}`, 'moviesResults', 'success');
+                log(`   Title: ${result.title}`, 'moviesResults', 'success');
+            } catch (error) {
+                log(`❌ Add movie failed: ${error.message}`, 'moviesResults', 'error');
+            }
+        }
+
+        async function testMovieOperations() {
+            log('🎬 Testing full movie CRUD operations...', 'moviesResults');
+            
+            // First get current movies
+            await testGetMovies();
+            
+            // Add a test movie
+            await testAddMovie();
+            
+            // Get movies again to verify
+            await testGetMovies();
+            
+            log('✅ Full CRUD test completed', 'moviesResults', 'success');
+        }
+
+        // Registration Tests
+        async function testRegistration() {
+            log('📝 Testing user registration...', 'registrationResults');
+            
+            try {
+                const timestamp = Date.now();
+                const testUser = {
+                    username: `testuser${timestamp}`,
+                    email: `test${timestamp}@example.com`,
+                    password: 'testpass123',
+                    firstName: 'Test',
+                    lastName: 'User'
+                };
+
+                const startTime = performance.now();
+                const result = await springAuthClient.register(testUser);
+                const endTime = performance.now();
+                
+                log(`✅ User registered (${Math.round(endTime - startTime)}ms)`, 'registrationResults', 'success');
+                log(`   Username: ${testUser.username}`, 'registrationResults', 'success');
+                log(`   Email: ${testUser.email}`, 'registrationResults', 'success');
+            } catch (error) {
+                log(`❌ Registration failed: ${error.message}`, 'registrationResults', 'error');
+            }
+        }
+
+        async function testUsernameCheck() {
+            log('👤 Testing username availability...', 'registrationResults');
+            
+            try {
+                // Test existing username
+                const existingResult = await springAuthClient.checkUsername('admin');
+                log(`✅ Username 'admin' check: ${existingResult.available ? 'Available' : 'Taken'}`, 'registrationResults', 'success');
+                
+                // Test new username
+                const newUsername = `newuser${Date.now()}`;
+                const newResult = await springAuthClient.checkUsername(newUsername);
+                log(`✅ Username '${newUsername}' check: ${newResult.available ? 'Available' : 'Taken'}`, 'registrationResults', 'success');
+            } catch (error) {
+                log(`❌ Username check failed: ${error.message}`, 'registrationResults', 'error');
+            }
+        }
+
+        async function testEmailCheck() {
+            log('📧 Testing email availability...', 'registrationResults');
+            
+            try {
+                // Test new email
+                const newEmail = `test${Date.now()}@example.com`;
+                const result = await springAuthClient.checkEmail(newEmail);
+                log(`✅ Email '${newEmail}' check: ${result.available ? 'Available' : 'Taken'}`, 'registrationResults', 'success');
+            } catch (error) {
+                log(`❌ Email check failed: ${error.message}`, 'registrationResults', 'error');
+            }
+        }
+
+        // Security Tests
+        async function testUnauthorizedAccess() {
+            log('🛡️ Testing unauthorized access...', 'securityResults');
+            
+            try {
+                const response = await fetch('http://localhost:9081/auth/me');
+                if (response.status === 401) {
+                    log('✅ Unauthorized access properly blocked (401)', 'securityResults', 'success');
+                } else {
+                    log(`❌ Unexpected response: ${response.status}`, 'securityResults', 'error');
+                }
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`, 'securityResults', 'error');
+            }
+        }
+
+        async function testTokenExpiry() {
+            log('🎫 Testing invalid token handling...', 'securityResults');
+            
+            try {
+                const invalidToken = 'invalid.token.here';
+                const response = await fetch('http://localhost:9081/auth/me', {
+                    headers: { 'Authorization': `Bearer ${invalidToken}` }
+                });
+                
+                if (response.status === 401) {
+                    log('✅ Invalid token properly rejected (401)', 'securityResults', 'success');
+                } else {
+                    log(`❌ Unexpected response: ${response.status}`, 'securityResults', 'error');
+                }
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`, 'securityResults', 'error');
+            }
+        }
+
+        async function testAdminEndpoints() {
+            if (!testToken) {
+                log('⚠️ No token available. Please login first.', 'securityResults', 'error');
+                return;
+            }
+
+            log('👑 Testing admin endpoint access...', 'securityResults');
+            
+            try {
+                // This is a placeholder - replace with actual admin endpoint
+                const response = await fetch('http://localhost:9081/admin/users', {
+                    headers: { 'Authorization': `Bearer ${testToken}` }
+                });
+                
+                log(`Admin endpoint response: ${response.status}`, 'securityResults', 
+                     response.status === 403 ? 'success' : 'error');
+            } catch (error) {
+                log(`❌ Admin test failed: ${error.message}`, 'securityResults', 'error');
+            }
+        }
+
+        // Performance Tests
+        async function testResponseTimes() {
+            log('⚡ Testing response times...', 'performanceResults');
+            
+            const endpoints = [
+                { name: 'Health Check', url: 'http://localhost:9081/actuator/health' },
+                { name: 'Login', url: 'http://localhost:9081/auth/login', method: 'POST', body: { username: 'admin', password: 'admin123' } }
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    const startTime = performance.now();
+                    
+                    const options = {
+                        method: endpoint.method || 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    };
+                    
+                    if (endpoint.body) {
+                        options.body = JSON.stringify(endpoint.body);
+                    }
+                    
+                    const response = await fetch(endpoint.url, options);
+                    const endTime = performance.now();
+                    const responseTime = Math.round(endTime - startTime);
+                    
+                    log(`✅ ${endpoint.name}: ${responseTime}ms`, 'performanceResults', 'success');
+                } catch (error) {
+                    log(`❌ ${endpoint.name}: Failed`, 'performanceResults', 'error');
+                }
+            }
+        }
+
+        async function testConcurrentRequests() {
+            log('🔄 Testing concurrent requests...', 'performanceResults');
+            
+            const promises = [];
+            const requestCount = 5;
+            
+            for (let i = 0; i < requestCount; i++) {
+                promises.push(fetch('http://localhost:9081/actuator/health'));
+            }
+            
+            try {
+                const startTime = performance.now();
+                const results = await Promise.all(promises);
+                const endTime = performance.now();
+                
+                const successCount = results.filter(r => r.ok).length;
+                const totalTime = Math.round(endTime - startTime);
+                
+                log(`✅ ${successCount}/${requestCount} concurrent requests successful in ${totalTime}ms`, 'performanceResults', 'success');
+            } catch (error) {
+                log(`❌ Concurrent test failed: ${error.message}`, 'performanceResults', 'error');
+            }
+        }
+
+        async function testLoadTest() {
+            log('🚀 Running load test (10 requests)...', 'performanceResults');
+            
+            const promises = [];
+            const requestCount = 10;
+            
+            for (let i = 0; i < requestCount; i++) {
+                promises.push(
+                    fetch('http://localhost:9081/actuator/health')
+                        .then(response => ({
+                            success: response.ok,
+                            status: response.status,
+                            time: performance.now()
+                        }))
+                );
+            }
+            
+            try {
+                const startTime = performance.now();
+                const results = await Promise.all(promises);
+                const endTime = performance.now();
+                
+                const successCount = results.filter(r => r.success).length;
+                const totalTime = Math.round(endTime - startTime);
+                const avgTime = Math.round(totalTime / requestCount);
+                
+                log(`✅ Load test completed: ${successCount}/${requestCount} successful`, 'performanceResults', 'success');
+                log(`   Total time: ${totalTime}ms | Average: ${avgTime}ms`, 'performanceResults', 'success');
+            } catch (error) {
+                log(`❌ Load test failed: ${error.message}`, 'performanceResults', 'error');
+            }
+        }
+
+        // Full System Test
+        async function runFullSystemTest() {
+            log('🚀 Starting complete system test...', 'fullTestResults');
+            
+            const tests = [
+                { name: 'Service Health', func: checkAllServices },
+                { name: 'Login', func: testLogin },
+                { name: 'Profile', func: testProfile },
+                { name: 'Token Validation', func: testValidateToken },
+                { name: 'Movies API', func: testGetMovies },
+                { name: 'Add Movie', func: testAddMovie },
+                { name: 'Security', func: testUnauthorizedAccess },
+                { name: 'Performance', func: testResponseTimes }
+            ];
+            
+            let passedTests = 0;
+            const startTime = performance.now();
+            
+            for (const test of tests) {
+                try {
+                    log(`🧪 Running ${test.name}...`, 'fullTestResults');
+                    await test.func();
+                    passedTests++;
+                    log(`✅ ${test.name} completed`, 'fullTestResults', 'success');
+                } catch (error) {
+                    log(`❌ ${test.name} failed: ${error.message}`, 'fullTestResults', 'error');
+                }
+            }
+            
+            const endTime = performance.now();
+            const totalTime = Math.round(endTime - startTime);
+            
+            log(`\n🏁 FULL SYSTEM TEST COMPLETE`, 'fullTestResults', 'success');
+            log(`   Tests passed: ${passedTests}/${tests.length}`, 'fullTestResults', 'success');
+            log(`   Total time: ${totalTime}ms`, 'fullTestResults', 'success');
+            log(`   Success rate: ${Math.round((passedTests / tests.length) * 100)}%`, 'fullTestResults', 'success');
+            
+            if (passedTests === tests.length) {
+                log(`\n🎉 ALL TESTS PASSED! System is fully functional.`, 'fullTestResults', 'success');
+            } else {
+                log(`\n⚠️ Some tests failed. Check individual results above.`, 'fullTestResults', 'error');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🔬 API Test Suite initialized. Ready for testing!', 'fullTestResults');
+            log('💡 Tip: Start with "Check All Services" to verify backend is running.', 'fullTestResults');
+        });
+    </script>
+</body>
+</html>

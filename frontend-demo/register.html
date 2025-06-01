@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Auth System - Registrazione</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .register-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo h1 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-validation {
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            min-height: 1.2rem;
+        }
+
+        .input-validation.success {
+            color: #28a745;
+        }
+
+        .input-validation.error {
+            color: #dc3545;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #c33;
+        }
+
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #3c3;
+        }
+
+        .info {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 0.75rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border-left: 4px solid #1565c0;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .password-requirements {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .password-requirements h4 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .password-requirements ul {
+            margin-left: 1rem;
+        }
+
+        .password-requirements li {
+            margin-bottom: 0.25rem;
+            color: #666;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">
+            <h1>🔐 Spring Auth System</h1>
+            <p>Crea il tuo account</p>
+        </div>
+
+        <div id="message"></div>
+        <div class="loading" id="loading"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">Username: *</label>
+                <input type="text" id="username" name="username" required>
+                <div class="input-validation" id="usernameValidation"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email: *</label>
+                <input type="email" id="email" name="email" required>
+                <div class="input-validation" id="emailValidation"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password: *</label>
+                <input type="password" id="password" name="password" required>
+                <div class="input-validation" id="passwordValidation"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Conferma Password: *</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                <div class="input-validation" id="confirmPasswordValidation"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="firstName">Nome:</label>
+                <input type="text" id="firstName" name="firstName">
+            </div>
+
+            <div class="form-group">
+                <label for="lastName">Cognome:</label>
+                <input type="text" id="lastName" name="lastName">
+            </div>
+
+            <button type="submit" class="btn" id="registerBtn">
+                🚀 Registrati
+            </button>
+        </form>
+
+        <div class="links">
+            <p>Hai già un account? <a href="login.html">Accedi qui</a></p>
+        </div>
+
+        <div class="password-requirements">
+            <h4>📋 Requisiti Password:</h4>
+            <ul>
+                <li>Minimo 6 caratteri</li>
+                <li>Almeno una lettera maiuscola (raccomandato)</li>
+                <li>Almeno una lettera minuscola (raccomandato)</li>
+                <li>Almeno un numero (raccomandato)</li>
+            </ul>
+        </div>
+
+        <div class="info">
+            <strong>ℹ️ Informazioni:</strong><br>
+            I campi contrassegnati con * sono obbligatori.<br>
+            Username deve essere univoco nel sistema.
+        </div>
+    </div>
+
+    <script src="auth-client.js"></script>
+    <script>
+        // Elementi DOM
+        const registerForm = document.getElementById('registerForm');
+        const messageDiv = document.getElementById('message');
+        const loadingDiv = document.getElementById('loading');
+        const registerBtn = document.getElementById('registerBtn');
+
+        // Validation elements
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+
+        const usernameValidation = document.getElementById('usernameValidation');
+        const emailValidation = document.getElementById('emailValidation');
+        const passwordValidation = document.getElementById('passwordValidation');
+        const confirmPasswordValidation = document.getElementById('confirmPasswordValidation');
+
+        // Validation state
+        let validationState = {
+            username: false,
+            email: false,
+            password: false,
+            confirmPassword: false
+        };
+
+        // Funzione per mostrare messaggi
+        function showMessage(message, type = 'error') {
+            messageDiv.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                messageDiv.innerHTML = '';
+            }, 7000);
+        }
+
+        // Funzione per mostrare/nascondere loading
+        function setLoading(show) {
+            loadingDiv.style.display = show ? 'block' : 'none';
+            registerBtn.disabled = show;
+            registerBtn.textContent = show ? 'Registrazione...' : '🚀 Registrati';
+        }
+
+        // Validation functions
+        function showValidation(element, message, isValid) {
+            element.textContent = message;
+            element.className = `input-validation ${isValid ? 'success' : 'error'}`;
+        }
+
+        // Username validation
+        usernameInput.addEventListener('input', async (e) => {
+            const username = e.target.value;
+            
+            if (username.length < 3) {
+                showValidation(usernameValidation, '❌ Username deve avere almeno 3 caratteri', false);
+                validationState.username = false;
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                showValidation(usernameValidation, '❌ Solo lettere, numeri e underscore', false);
+                validationState.username = false;
+                return;
+            }
+
+            // Check availability
+            try {
+                const result = await springAuthClient.checkUsername(username);
+                if (result.available) {
+                    showValidation(usernameValidation, '✅ Username disponibile', true);
+                    validationState.username = true;
+                } else {
+                    showValidation(usernameValidation, '❌ Username già in uso', false);
+                    validationState.username = false;
+                }
+            } catch (error) {
+                showValidation(usernameValidation, '⚠️ Impossibile verificare disponibilità', false);
+                validationState.username = false;
+            }
+        });
+
+        // Email validation
+        emailInput.addEventListener('input', async (e) => {
+            const email = e.target.value;
+            
+            if (!email) {
+                showValidation(emailValidation, '', false);
+                validationState.email = false;
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                showValidation(emailValidation, '❌ Formato email non valido', false);
+                validationState.email = false;
+                return;
+            }
+
+            // Check availability
+            try {
+                const result = await springAuthClient.checkEmail(email);
+                if (result.available) {
+                    showValidation(emailValidation, '✅ Email disponibile', true);
+                    validationState.email = true;
+                } else {
+                    showValidation(emailValidation, '❌ Email già registrata', false);
+                    validationState.email = false;
+                }
+            } catch (error) {
+                showValidation(emailValidation, '⚠️ Impossibile verificare disponibilità', false);
+                validationState.email = false;
+            }
+        });
+
+        // Password validation
+        passwordInput.addEventListener('input', (e) => {
+            const password = e.target.value;
+            
+            if (!password) {
+                showValidation(passwordValidation, '', false);
+                validationState.password = false;
+                return;
+            }
+
+            if (password.length < 6) {
+                showValidation(passwordValidation, '❌ Password troppo corta (min 6 caratteri)', false);
+                validationState.password = false;
+                return;
+            }
+
+            // Check strength
+            let score = 0;
+            let feedback = [];
+
+            if (password.length >= 8) score++;
+            if (/[a-z]/.test(password)) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^a-zA-Z0-9]/.test(password)) score++;
+
+            if (score >= 3) {
+                showValidation(passwordValidation, '✅ Password accettabile', true);
+                validationState.password = true;
+            } else {
+                showValidation(passwordValidation, '⚠️ Password debole (aggiungere numeri/maiuscole)', false);
+                validationState.password = true; // Accetta comunque se >= 6 caratteri
+            }
+
+            // Re-validate confirm password
+            if (confirmPasswordInput.value) {
+                validateConfirmPassword();
+            }
+        });
+
+        // Confirm password validation
+        function validateConfirmPassword() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (!confirmPassword) {
+                showValidation(confirmPasswordValidation, '', false);
+                validationState.confirmPassword = false;
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showValidation(confirmPasswordValidation, '❌ Le password non corrispondono', false);
+                validationState.confirmPassword = false;
+            } else {
+                showValidation(confirmPasswordValidation, '✅ Password confermate', true);
+                validationState.confirmPassword = true;
+            }
+        }
+
+        confirmPasswordInput.addEventListener('input', validateConfirmPassword);
+
+        // Form submission
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Check required fields
+            const username = usernameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+
+            if (!username || !email || !password || !confirmPassword) {
+                showMessage('❌ Compila tutti i campi obbligatori');
+                return;
+            }
+
+            // Check validation state
+            if (!validationState.username || !validationState.email || 
+                !validationState.password || !validationState.confirmPassword) {
+                showMessage('❌ Correggi gli errori prima di procedere');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                const userData = {
+                    username,
+                    email,
+                    password,
+                    firstName: document.getElementById('firstName').value.trim() || null,
+                    lastName: document.getElementById('lastName').value.trim() || null
+                };
+
+                const result = await springAuthClient.register(userData);
+                
+                showMessage(`✅ Registrazione completata! Benvenuto ${username}! Reindirizzamento al login...`, 'success');
+                
+                // Redirect to login after 3 seconds
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 3000);
+
+            } catch (error) {
+                console.error('Registration error:', error);
+                showMessage(`❌ Errore durante la registrazione: ${error.message}`);
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // Check if already logged in
+        if (springAuthClient.isAuthenticated()) {
+            showMessage('ℹ️ Sei già autenticato. Reindirizzamento alla dashboard...', 'info');
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 2000);
+        }
+
+        // Test connection on load
+        window.addEventListener('load', async () => {
+            try {
+                const healthCheck = await springAuthClient.checkServiceHealth('auth');
+                if (healthCheck.status !== 'online') {
+                    showMessage('⚠️ Auth Service non raggiungibile. Verifica che sia avviato su porta 9081.');
+                }
+            } catch (error) {
+                showMessage('⚠️ Impossibile connettersi al server. Verifica che l\'applicazione sia avviata.');
+            }
+        });
+    </script>
+</body>
+</html>
