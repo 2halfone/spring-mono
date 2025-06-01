@@ -5,7 +5,8 @@
  * Gestisce autenticazione, API calls e gestione errori
  */
 
-// Configurazione API centralizzata
+// Configurazione API centralizzata - VM Configuration
+// Per testare in locale, cambiare gli IP con 'localhost'
 const API_CONFIG = {
     AUTH_SERVICE: 'http://localhost:9081',
     CHAT_SERVICE: 'http://localhost:9082', 
@@ -201,10 +202,9 @@ class SpringAuthClient {
 
     /**
      * MOVIES API
-     */
-    async getMovies() {
+     */    async getMovies() {
         try {
-            const response = await fetch(`${API_CONFIG.AUTH_SERVICE}${API_CONFIG.ENDPOINTS.MOVIES}`, {
+            const response = await fetch(`${API_CONFIG.CHAT_SERVICE}${API_CONFIG.ENDPOINTS.MOVIES}`, {
                 headers: this.getAuthHeaders()
             });
 
@@ -216,11 +216,9 @@ class SpringAuthClient {
         } catch (error) {
             this.handleError(error, 'getMovies');
         }
-    }
-
-    async addMovie(movieData) {
+    }    async addMovie(movieData) {
         try {
-            const response = await fetch(`${API_CONFIG.AUTH_SERVICE}${API_CONFIG.ENDPOINTS.MOVIES}`, {
+            const response = await fetch(`${API_CONFIG.CHAT_SERVICE}${API_CONFIG.ENDPOINTS.MOVIES}`, {
                 method: 'POST',
                 headers: this.getAuthHeaders(),
                 body: JSON.stringify(movieData)
