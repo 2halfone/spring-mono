@@ -22,7 +22,7 @@ frontend-demo/
 Prima di usare il frontend, assicurati che i servizi Spring Boot siano attivi:
 
 ```bash
-# Avvia tutto con Docker
+# Avvia tutto con Docker.
 docker-compose up -d
 
 # OPPURE avvia manualmente
