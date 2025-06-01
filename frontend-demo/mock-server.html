@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>🧪 Mock Server Test - Dynamic IP Detection</title>
+    <style>
+        body { 
+            font-family: 'Consolas', monospace; 
+            background: #1a1a1a; 
+            color: #00ff00; 
+            padding: 2rem; 
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-result { 
+            background: #222; 
+            padding: 1rem; 
+            margin: 1rem 0; 
+            border-left: 4px solid #00ff00; 
+        }
+        .error { border-left-color: #ff0000; color: #ff6666; }
+        .success { border-left-color: #00ff00; color: #66ff66; }
+        .info { border-left-color: #0066ff; color: #6666ff; }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 DYNAMIC IP DETECTION TEST</h1>
+        <p>Questo test simula diversi ambienti per verificare la logica di auto-detection IP</p>
+        
+        <button onclick="testLocalEnvironment()">Test Local Environment</button>
+        <button onclick="testVMEnvironment()">Test VM Environment</button>
+        <button onclick="testProductionEnvironment()">Test Production Environment</button>
+        <button onclick="testAllScenarios()">🚀 Test All Scenarios</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // 🔧 Copia della logica di auto-detection da auth-client.js
+        function getApiConfig(mockHostname = null) {
+            const currentHost = mockHostname || window.location.hostname;
+            const isLocal = currentHost === 'localhost' || currentHost === '127.0.0.1';
+            
+            // Auto-detect environment: se siamo in locale usa localhost, altrimenti usa IP VM
+            const baseIP = isLocal ? 'localhost' : (currentHost || '192.168.1.146');
+            
+            const config = {
+                ENVIRONMENT: isLocal ? 'LOCAL' : 'VM',
+                BASE_IP: baseIP,
+                AUTH_SERVICE: `http://${baseIP}:9081`,
+                GATEWAY: `http://${baseIP}:9080`,
+                MOCK_HOSTNAME: mockHostname || 'actual',
+                CURRENT_HOST: currentHost
+            };
+            
+            return config;
+        }
+
+        function logResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            resultsDiv.innerHTML += `<div class="test-result ${type}">[${timestamp}] ${message}</div>`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function testLocalEnvironment() {
+            logResult('🏠 Testing LOCAL environment...', 'info');
+            
+            // Simula localhost
+            const config = getApiConfig('localhost');
+            logResult(`✅ Hostname: ${config.CURRENT_HOST}`, 'success');
+            logResult(`✅ Environment: ${config.ENVIRONMENT}`, 'success');
+            logResult(`✅ Auth Service: ${config.AUTH_SERVICE}`, 'success');
+            logResult(`✅ Gateway: ${config.GATEWAY}`, 'success');
+            
+            if (config.AUTH_SERVICE === 'http://localhost:9081') {
+                logResult('✅ LOCAL detection: PASSED', 'success');
+            } else {
+                logResult('❌ LOCAL detection: FAILED', 'error');
+            }
+        }
+
+        function testVMEnvironment() {
+            logResult('🖥️ Testing VM environment...', 'info');
+            
+            // Simula VM IP
+            const config = getApiConfig('192.168.1.146');
+            logResult(`✅ Hostname: ${config.CURRENT_HOST}`, 'success');
+            logResult(`✅ Environment: ${config.ENVIRONMENT}`, 'success');
+            logResult(`✅ Auth Service: ${config.AUTH_SERVICE}`, 'success');
+            logResult(`✅ Gateway: ${config.GATEWAY}`, 'success');
+            
+            if (config.AUTH_SERVICE === 'http://192.168.1.146:9081') {
+                logResult('✅ VM detection: PASSED', 'success');
+            } else {
+                logResult('❌ VM detection: FAILED', 'error');
+            }
+        }
+
+        function testProductionEnvironment() {
+            logResult('🌐 Testing PRODUCTION environment...', 'info');
+            
+            // Simula production domain
+            const config = getApiConfig('myapp.example.com');
+            logResult(`✅ Hostname: ${config.CURRENT_HOST}`, 'success');
+            logResult(`✅ Environment: ${config.ENVIRONMENT}`, 'success');
+            logResult(`✅ Auth Service: ${config.AUTH_SERVICE}`, 'success');
+            logResult(`✅ Gateway: ${config.GATEWAY}`, 'success');
+            
+            if (config.AUTH_SERVICE === 'http://myapp.example.com:9081') {
+                logResult('✅ PRODUCTION detection: PASSED', 'success');
+            } else {
+                logResult('❌ PRODUCTION detection: FAILED', 'error');
+            }
+        }
+
+        function testAllScenarios() {
+            logResult('🚀 Running COMPLETE test suite...', 'info');
+            logResult('='.repeat(50), 'info');
+            
+            // Test current environment (real)
+            logResult('🔍 CURRENT ENVIRONMENT (Real):', 'info');
+            const realConfig = getApiConfig();
+            logResult(`Current URL: ${window.location.href}`, 'info');
+            logResult(`Current Host: ${realConfig.CURRENT_HOST}`, 'info');
+            logResult(`Detected Environment: ${realConfig.ENVIRONMENT}`, 'info');
+            logResult(`API Endpoint: ${realConfig.AUTH_SERVICE}`, 'info');
+            logResult('-'.repeat(30), 'info');
+            
+            // Test all mock scenarios
+            testLocalEnvironment();
+            logResult('-'.repeat(30), 'info');
+            testVMEnvironment();
+            logResult('-'.repeat(30), 'info');
+            testProductionEnvironment();
+            logResult('-'.repeat(30), 'info');
+            
+            logResult('🎉 All tests completed!', 'success');
+        }
+
+        // Auto-run basic test on load
+        window.addEventListener('load', () => {
+            logResult('🧪 Mock Server Test initialized', 'success');
+            logResult('💡 Click buttons above to test different scenarios', 'info');
+            
+            // Show current environment
+            const current = getApiConfig();
+            logResult(`Current detected environment: ${current.ENVIRONMENT}`, 'info');
+            logResult(`Current API endpoint: ${current.AUTH_SERVICE}`, 'info');
+        });
+    </script>
+</body>
+</html>
