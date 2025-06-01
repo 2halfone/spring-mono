@@ -318,10 +318,12 @@
             } catch (error) {
                 console.error('Token info error:', error);
             }
-        }
-
-        async function checkSystemHealth() {
+        }        async function checkSystemHealth() {
             try {
+                // 🔍 Mostra informazioni di debug
+                console.log('🌐 Dashboard URL:', window.location.href);
+                console.log('🔧 API Configuration:', API_CONFIG);
+                
                 // Auth service health
                 const authHealth = await springAuthClient.checkServiceHealth('auth');
                 const authStatusEl = document.getElementById('auth-status');
@@ -330,17 +332,21 @@
                 if (authHealth.status === 'online') {
                     authStatusEl.textContent = '✅ Online';
                     authContainer.className = 'status-item status-online';
+                    console.log('✅ Auth Service: Online');
                 } else {
                     authStatusEl.textContent = '❌ Offline';
                     authContainer.className = 'status-item status-offline';
+                    console.log('❌ Auth Service: Offline');
                 }
 
-                // Gateway status (simplified check)
+                // Gateway status (simplified check - same IP as auth service)
                 document.getElementById('gateway-status').textContent = '✅ Online';
                 document.getElementById('gateway-status').parentElement.className = 'status-item status-online';
                 
             } catch (error) {
-                console.error('Health check error:', error);
+                console.error('❌ Health check error:', error);
+                const apiConfig = typeof API_CONFIG !== 'undefined' ? API_CONFIG.AUTH_SERVICE : 'N/A';
+                showMessage(`⚠️ Errore controllo sistema: ${apiConfig}`, 'error');
             }
         }
 

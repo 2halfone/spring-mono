@@ -277,19 +277,24 @@
         document.getElementById('username').addEventListener('dblclick', () => {
             document.getElementById('username').value = 'admin';
             document.getElementById('password').value = 'admin123';
-        });
-
-        // Test connessione al caricamento
+        });        // Test connessione al caricamento con info dettagliate
         window.addEventListener('load', async () => {
+            // 🔍 Mostra informazioni di debug
+            console.log('🌐 Current URL:', window.location.href);
+            console.log('🔧 Auth Client Config:', springAuthClient ? 'Loaded' : 'Not loaded');
+            
             try {
                 const health = await springAuthClient.checkServiceHealth('auth');
                 if (health.status === 'online') {
                     console.log('✅ Auth Service online');
+                    showMessage('🟢 Sistema pronto - Auth Service online', 'success');
                 } else {
                     showMessage('⚠️ Auth Service non raggiungibile. Verifica che sia avviato.');
                 }
             } catch (error) {
-                showMessage('⚠️ Impossibile connettersi al server. Verifica che l\'applicazione sia avviata.');
+                console.error('❌ Connection error:', error);
+                const apiConfig = typeof API_CONFIG !== 'undefined' ? API_CONFIG.AUTH_SERVICE : 'N/A';
+                showMessage(`⚠️ Impossibile connettersi: ${apiConfig}<br/>🔧 Verifica che l'applicazione sia avviata.`);
             }
         });
     </script>

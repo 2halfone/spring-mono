@@ -3,27 +3,49 @@
  * 
  * Client JavaScript per l'integrazione con il sistema Spring Boot
  * Gestisce autenticazione, API calls e gestione errori
+ * 
+ * ✨ VERSIONE CON IP DINAMICO ✨
+ * Auto-rileva l'ambiente (locale o VM) e configura gli endpoint appropriati
  */
 
-// Configurazione API centralizzata - VM Configuration
-// Per testare in locale, cambiare gli IP con 'localhost'
-const API_CONFIG = {
-    AUTH_SERVICE: 'http://192.168.1.146:9081',
-    GATEWAY: 'http://192.168.1.146:9080',
-    ENDPOINTS: {
-        // Auth endpoints
-        LOGIN: '/auth/login',
-        REGISTER: '/auth/register',
-        PROFILE: '/auth/me',
-        VALIDATE: '/auth/validate',
-        REFRESH: '/auth/refresh',
-        CHECK_USERNAME: '/auth/check-username',
-        CHECK_EMAIL: '/auth/check-email',
-        
-        // Health endpoints
-        HEALTH: '/actuator/health'
-    }
-};
+// 🔧 Configurazione API DINAMICA - Auto-detect Environment
+function getApiConfig() {
+    const currentHost = window.location.hostname;
+    const isLocal = currentHost === 'localhost' || currentHost === '127.0.0.1';
+    
+    // Auto-detect environment: se siamo in locale usa localhost, altrimenti usa IP VM
+    const baseIP = isLocal ? 'localhost' : (currentHost || '192.168.1.146');
+    
+    const config = {
+        ENVIRONMENT: isLocal ? 'LOCAL' : 'VM',
+        BASE_IP: baseIP,
+        AUTH_SERVICE: `http://${baseIP}:9081`,
+        GATEWAY: `http://${baseIP}:9080`,
+        ENDPOINTS: {
+            // Auth endpoints
+            LOGIN: '/auth/login',
+            REGISTER: '/auth/register',
+            PROFILE: '/auth/me',
+            VALIDATE: '/auth/validate',
+            REFRESH: '/auth/refresh',
+            CHECK_USERNAME: '/auth/check-username',
+            CHECK_EMAIL: '/auth/check-email',
+            
+            // Health endpoints
+            HEALTH: '/actuator/health'
+        }
+    };
+    
+    // 🔍 Debug info
+    console.log('🌐 Current Host:', currentHost);
+    console.log('🔧 Environment:', config.ENVIRONMENT);
+    console.log('📡 API Config:', config);
+    
+    return config;
+}
+
+// Configurazione API dinamica
+const API_CONFIG = getApiConfig();
 
 /**
  * Classe principale per gestire le API calls
