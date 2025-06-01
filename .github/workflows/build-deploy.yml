@@ -4,9 +4,9 @@ on:
     branches:
       - main
 
-jobs:
-  build:
-    runs-on: ubuntu-latest    strategy:
+jobs:  build:
+    runs-on: ubuntu-latest
+    strategy:
       matrix:
         service:
           - auth-service
