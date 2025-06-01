@@ -13,27 +13,28 @@ function getApiConfig() {
     const currentHost = window.location.hostname;
     const isLocal = currentHost === 'localhost' || currentHost === '127.0.0.1';
 // Auto-detect environment: se siamo in locale usa localhost, altrimenti usa IP VM pubblico
-    const baseIP = isLocal ? 'localhost' : '34.140.122.146';
-    
-    const config = {
-        ENVIRONMENT: isLocal ? 'LOCAL' : 'VM',
-        BASE_IP: baseIP,
-        AUTH_SERVICE: `http://${baseIP}:9081`,
-        GATEWAY: `http://${baseIP}:9080`,
-        ENDPOINTS: {
-            // Auth endpoints
-            LOGIN: '/auth/login',
-            REGISTER: '/auth/register',
-            PROFILE: '/auth/me',
-            VALIDATE: '/auth/validate',
-            REFRESH: '/auth/refresh',
-            CHECK_USERNAME: '/auth/check-username',
-            CHECK_EMAIL: '/auth/check-email',
-            
-            // Health endpoints
-            HEALTH: '/actuator/health'
-        }
-    };
+const baseIP = isLocal ? 'localhost' : '34.140.122.146';
+
+const config = {
+    ENVIRONMENT: isLocal ? 'LOCAL' : 'PRODUCTION',
+    BASE_IP: baseIP,
+    // 🌐 HTTPS per produzione, HTTP per sviluppo locale
+    AUTH_SERVICE: isLocal ? `http://${baseIP}:9081` : `https://${baseIP}:9081`,
+    GATEWAY: isLocal ? `http://${baseIP}:9080` : `https://${baseIP}:9080`,
+    ENDPOINTS: {
+        // Auth endpoints
+        LOGIN: '/auth/login',
+        REGISTER: '/auth/register',
+        PROFILE: '/auth/me',
+        VALIDATE: '/auth/validate',
+        REFRESH: '/auth/refresh',
+        CHECK_USERNAME: '/auth/check-username',
+        CHECK_EMAIL: '/auth/check-email',
+        
+        // Health endpoints
+        HEALTH: '/actuator/health'
+    }
+};
     
     // 🔍 Debug info
     console.log('🌐 Current Host:', currentHost);
