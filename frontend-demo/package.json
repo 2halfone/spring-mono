@@ -1,0 +1,13 @@
+{
+  "name": "microservices-frontend-demo",
+  "version": "1.0.0",
+  "description": "Frontend demo for microservices login system",
+  "main": "login.html",
+  "scripts": {
+    "start": "serve .",
+    "build": "echo 'No build step required for static files'"
+  },
+  "keywords": ["microservices", "authentication", "frontend", "demo"],
+  "author": "Your Name",
+  "license": "MIT"
+}

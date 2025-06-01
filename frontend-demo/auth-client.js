@@ -12,9 +12,8 @@
 function getApiConfig() {
     const currentHost = window.location.hostname;
     const isLocal = currentHost === 'localhost' || currentHost === '127.0.0.1';
-    
-    // Auto-detect environment: se siamo in locale usa localhost, altrimenti usa IP VM
-    const baseIP = isLocal ? 'localhost' : (currentHost || '192.168.1.146');
+// Auto-detect environment: se siamo in locale usa localhost, altrimenti usa IP VM pubblico
+    const baseIP = isLocal ? 'localhost' : '34.140.122.146';
     
     const config = {
         ENVIRONMENT: isLocal ? 'LOCAL' : 'VM',
