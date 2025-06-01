@@ -9,7 +9,6 @@
 // Per testare in locale, cambiare gli IP con 'localhost'
 const API_CONFIG = {
     AUTH_SERVICE: 'http://192.168.1.146:9081',
-    CHAT_SERVICE: 'http://192.168.1.146:9082', 
     GATEWAY: 'http://192.168.1.146:9080',
     ENDPOINTS: {
         // Auth endpoints
@@ -20,9 +19,6 @@ const API_CONFIG = {
         REFRESH: '/auth/refresh',
         CHECK_USERNAME: '/auth/check-username',
         CHECK_EMAIL: '/auth/check-email',
-        
-        // Movies endpoints
-        MOVIES: '/movies',
         
         // Health endpoints
         HEALTH: '/actuator/health'
@@ -198,48 +194,12 @@ class SpringAuthClient {
         } catch (error) {
             this.handleError(error, 'refreshToken');
         }
-    }
-
-    /**
-     * MOVIES API
-     */    async getMovies() {
-        try {
-            const response = await fetch(`${API_CONFIG.CHAT_SERVICE}${API_CONFIG.ENDPOINTS.MOVIES}`, {
-                headers: this.getAuthHeaders()
-            });
-
-            if (!response.ok) {
-                throw new Error('Impossibile caricare i movies');
-            }
-
-            return await response.json();
-        } catch (error) {
-            this.handleError(error, 'getMovies');
-        }
-    }    async addMovie(movieData) {
-        try {
-            const response = await fetch(`${API_CONFIG.CHAT_SERVICE}${API_CONFIG.ENDPOINTS.MOVIES}`, {
-                method: 'POST',
-                headers: this.getAuthHeaders(),
-                body: JSON.stringify(movieData)
-            });
-
-            if (!response.ok) {
-                throw new Error('Impossibile aggiungere il movie');
-            }
-
-            return await response.json();
-        } catch (error) {
-            this.handleError(error, 'addMovie');
-        }
-    }
-
-    /**
+    }    /**
      * HEALTH CHECK
      */
     async checkServiceHealth(service = 'auth') {
         try {
-            const baseUrl = service === 'auth' ? API_CONFIG.AUTH_SERVICE : API_CONFIG.CHAT_SERVICE;
+            const baseUrl = API_CONFIG.AUTH_SERVICE;
             const response = await fetch(`${baseUrl}${API_CONFIG.ENDPOINTS.HEALTH}`);
             
             return {

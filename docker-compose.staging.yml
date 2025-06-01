@@ -35,25 +35,10 @@ services:
       JWT_SECRET: ${JWT_SECRET:-mySecretKey123456789012345678901234567890}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
       JWT_ISSUER: ${JWT_ISSUER:-spring-microservices}
-
-  chat-service:
-    build: ./chat-service
-    depends_on:
-      - postgres
-    ports:
-      - "9082:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydb
-      SPRING_DATASOURCE_USERNAME: springuser
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
-      JWT_SECRET: ${JWT_SECRET:-mySecretKey123456789012345678901234567890}
-      JWT_ISSUER: ${JWT_ISSUER:-spring-microservices}
-
   gateway:
     build: ./gateway/initial
     depends_on:
       - auth-service
-      - chat-service
       - redis
     ports:
       - "9443:8443"  # HTTPS port

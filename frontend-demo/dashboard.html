@@ -50,8 +50,8 @@
 
         .welcome-card {
             background: white;
-            border-radius: 10px;
             padding: 2rem;
+            border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 2rem;
         }
@@ -59,20 +59,15 @@
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: 2rem;
+            margin-top: 2rem;
         }
 
         .card {
             background: white;
+            padding: 2rem;
             border-radius: 10px;
-            padding: 1.5rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
         }
 
         .card h3 {
@@ -84,153 +79,81 @@
         }
 
         .btn {
+            background: #667eea;
+            color: white;
             padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
+            font-size: 1rem;
             transition: background 0.3s;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
+            margin: 0.5rem 0.5rem 0.5rem 0;
         }
 
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
+        .btn:hover {
             background: #5a6fd8;
         }
 
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6169;
-        }
-
         .btn-danger {
-            background: #dc3545;
-            color: white;
+            background: #e74c3c;
         }
 
         .btn-danger:hover {
-            background: #c82333;
+            background: #c0392b;
         }
 
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .profile-info {
+        .info-item {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
             background: #f8f9fa;
-            padding: 1rem;
             border-radius: 5px;
-            margin: 1rem 0;
-        }
-
-        .profile-info p {
-            margin-bottom: 0.5rem;
-        }
-
-        .api-test {
-            background: #e9ecef;
-            padding: 1rem;
-            border-radius: 5px;
-            margin: 1rem 0;
-            font-family: monospace;
-            font-size: 0.9rem;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 3px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .status.online {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status.offline {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 1rem;
-            border-radius: 5px;
-            margin: 1rem 0;
         }
 
         .success {
-            background: #d4edda;
-            color: #155724;
+            color: #27ae60;
+            background: #d5f4e6;
             padding: 1rem;
             border-radius: 5px;
             margin: 1rem 0;
         }
 
-        .movie-list {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
+        .error {
+            color: #e74c3c;
+            background: #fadbd8;
             padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
         }
 
-        .movie-item {
-            padding: 0.5rem;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .info {
+            color: #3498db;
+            background: #ebf3fd;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 1rem 0;
         }
 
-        .movie-item:last-child {
-            border-bottom: none;
+        .system-status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
         }
 
-        .footer {
+        .status-item {
+            padding: 1rem;
+            border-radius: 5px;
             text-align: center;
-            padding: 2rem;
-            color: #666;
-            border-top: 1px solid #dee2e6;
-            margin-top: 3rem;
         }
 
-        @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-                gap: 1rem;
-            }
+        .status-online {
+            background: #d5f4e6;
+            color: #27ae60;
+        }
 
-            .container {
-                padding: 0 1rem;
-            }
-
-            .cards-grid {
-                grid-template-columns: 1fr;
-            }
+        .status-offline {
+            background: #fadbd8;
+            color: #e74c3c;
         }
     </style>
 </head>
@@ -241,414 +164,268 @@
                 <h1>🔐 Spring Auth System</h1>
             </div>
             <div class="user-info">
-                <span id="userWelcome">Benvenuto!</span>
+                <span id="header-username">Loading...</span>
                 <button class="btn btn-danger" onclick="logout()">🚪 Logout</button>
             </div>
         </div>
     </div>
 
     <div class="container">
+        <!-- Welcome Section -->
         <div class="welcome-card">
-            <h2>🎉 Dashboard Utente</h2>
-            <p>Benvenuto nel sistema di autenticazione Spring Boot microservizi!</p>
-            <div id="userProfile" class="profile-info">
-                <!-- Profilo utente verrà caricato qui -->
-            </div>
+            <h2>👋 Benvenuto nel Dashboard</h2>
+            <p>Sistema di autenticazione microservizi Spring Boot - Versione Semplificata</p>
+            <div id="message"></div>
         </div>
 
+        <!-- Cards Grid -->
         <div class="cards-grid">
-            <!-- Card Profilo Utente -->
+            <!-- User Profile Card -->
             <div class="card">
-                <h3>👤 Il Mio Profilo</h3>
-                <p>Gestisci le informazioni del tuo account</p>
-                <div id="profileDetails">
-                    <div class="loading">Caricamento profilo...</div>
-                </div>
-                <button class="btn btn-primary" onclick="refreshProfile()">🔄 Aggiorna Profilo</button>
-            </div>
-
-            <!-- Card Test API -->
-            <div class="card">
-                <h3>🔧 Test API</h3>
-                <p>Testa gli endpoint dell'applicazione</p>
-                <div id="apiResults">
-                    <p>Stato servizi:</p>
-                    <div id="serviceStatus">
-                        <div class="loading">Verifica stato...</div>
+                <h3>👤 Profilo Utente</h3>
+                
+                <div id="profile-info">
+                    <div class="info-item">
+                        <strong>Username:</strong> <span id="profile-username">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Email:</strong> <span id="profile-email">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Ruoli:</strong> <span id="profile-roles">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Registrato:</strong> <span id="profile-created">-</span>
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="testAllEndpoints()">🧪 Test Completo</button>
-                <button class="btn btn-secondary" onclick="testAuthEndpoints()">🔐 Test Auth</button>
+
+                <button class="btn" onclick="loadProfile()">🔄 Ricarica Profilo</button>
             </div>
 
-            <!-- Card Movies (se disponibile) -->
+            <!-- JWT Token Info Card -->
             <div class="card">
-                <h3>🎬 Movies API</h3>
-                <p>Accesso al servizio movies (se autorizzato)</p>
-                <div id="moviesContent">
-                    <div class="movie-list" id="moviesList">
-                        <div class="loading">Caricamento movies...</div>
+                <h3>🔑 Token JWT</h3>
+                <div id="token-info">
+                    <div class="info-item">
+                        <strong>Token presente:</strong> <span id="token-status">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Scade il:</strong> <span id="token-expiry">-</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Issuer:</strong> <span id="token-issuer">-</span>
                     </div>
                 </div>
-                <button class="btn btn-success" onclick="loadMovies()">📽️ Carica Movies</button>
-                <button class="btn btn-primary" onclick="addTestMovie()">➕ Aggiungi Test Movie</button>
+                <button class="btn" onclick="validateToken()">✅ Valida Token</button>
             </div>
 
-            <!-- Card Sistema -->
+            <!-- System Status Card -->
             <div class="card">
-                <h3>⚙️ Informazioni Sistema</h3>
-                <p>Dettagli tecnici del sistema</p>
-                <div class="api-test">
-                    <strong>Endpoints disponibili:</strong><br>
-                    • POST /auth/login - Login utente<br>
-                    • POST /auth/register - Registrazione<br>
-                    • GET /auth/me - Profilo utente<br>
-                    • POST /auth/validate - Validazione token<br>
-                    • GET /movies - Lista movies<br>
-                    • POST /movies - Crea movie<br>
+                <h3>📊 Stato Sistema</h3>
+                <div class="system-status" id="system-status">
+                    <div class="status-item status-offline">
+                        <div><strong>Auth Service</strong></div>
+                        <div id="auth-status">Checking...</div>
+                    </div>
+                    <div class="status-item status-offline">
+                        <div><strong>Gateway</strong></div>
+                        <div id="gateway-status">Checking...</div>
+                    </div>
                 </div>
-                <button class="btn btn-secondary" onclick="showSystemInfo()">📊 Info Sistema</button>
+                <button class="btn" onclick="checkSystemHealth()">🔍 Verifica Sistema</button>
             </div>
 
-            <!-- Card Token Info -->
+            <!-- Actions Card -->
             <div class="card">
-                <h3>🎫 Token Information</h3>
-                <p>Dettagli del token JWT corrente</p>
-                <div id="tokenInfo">
-                    <div class="loading">Analisi token...</div>
-                </div>
-                <button class="btn btn-primary" onclick="analyzeToken()">🔍 Analizza Token</button>
-                <button class="btn btn-secondary" onclick="validateToken()">✅ Valida Token</button>
-            </div>
-
-            <!-- Card Admin (solo per admin) -->
-            <div class="card" id="adminCard" style="display: none;">
-                <h3>👑 Funzioni Admin</h3>
-                <p>Funzionalità riservate agli amministratori</p>
-                <div id="adminContent">
-                    <p>• Gestione utenti</p>
-                    <p>• Monitoring sistema</p>
-                    <p>• Configurazioni avanzate</p>
-                </div>
-                <button class="btn btn-danger" onclick="adminTest()">⚡ Test Admin</button>
+                <h3>⚡ Azioni Rapide</h3>
+                <button class="btn" onclick="testAuthEndpoints()">🧪 Test Auth Endpoints</button>
+                <button class="btn" onclick="downloadSystemInfo()">📥 Download Info Sistema</button>
+                <button class="btn" onclick="clearLocalStorage()">🗑️ Pulisci Cache Locale</button>
             </div>
         </div>
     </div>
 
-    <div class="footer">
-        <p>Spring Boot Microservices Auth System | Sviluppato con ❤️</p>
-        <p>🚀 <strong>Sistema Pronto per Produzione</strong> | 🛡️ Security Score: 95/100</p>
-    </div>
-
+    <!-- Scripts -->
+    <script src="auth-client.js"></script>
     <script>
-        // Configurazione API
-        const API_CONFIG = {
-            AUTH_SERVICE: 'http://localhost:9081',
-            CHAT_SERVICE: 'http://localhost:9082',
-            GATEWAY: 'http://localhost:9080',
-            ENDPOINTS: {
-                PROFILE: '/auth/me',
-                VALIDATE: '/auth/validate',
-                MOVIES: '/movies',
-                HEALTH: '/actuator/health'
-            }
-        };
-
-        // Variabili globali
+        // Global state
         let currentUser = null;
-        let authToken = null;
 
-        // Inizializzazione
+        // Initialize dashboard
         document.addEventListener('DOMContentLoaded', async () => {
-            await initializeDashboard();
+            await initDashboard();
         });
 
-        async function initializeDashboard() {
-            // Verifica autenticazione
-            authToken = localStorage.getItem('authToken');
-            if (!authToken) {
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Carica dati utente
-            const userData = localStorage.getItem('user');
-            if (userData) {
-                currentUser = JSON.parse(userData);
-                updateUserWelcome();
-            }
-
-            // Carica profilo e inizializza dashboard
-            await loadUserProfile();
-            await checkServiceStatus();
-            await analyzeToken();
-            await loadMovies();
-        }
-
-        function updateUserWelcome() {
-            if (currentUser) {
-                document.getElementById('userWelcome').textContent = 
-                    `Benvenuto, ${currentUser.username}!`;
-                
-                // Mostra card admin se è admin
-                if (currentUser.roles && currentUser.roles.includes('ADMIN')) {
-                    document.getElementById('adminCard').style.display = 'block';
-                }
-            }
-        }
-
-        async function loadUserProfile() {
+        async function initDashboard() {
             try {
-                const response = await fetch(`${API_CONFIG.AUTH_SERVICE}${API_CONFIG.ENDPOINTS.PROFILE}`, {
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
+                showMessage('🔄 Caricamento dashboard...', 'info');
+                
+                // Check authentication
+                if (!springAuthClient.isAuthenticated()) {
+                    window.location.href = 'login.html';
+                    return;
+                }
 
-                if (response.ok) {
-                    const userData = await response.json();
-                    currentUser = userData;
-                    localStorage.setItem('user', JSON.stringify(userData));
+                // Load user profile
+                await loadProfile();
+                
+                // Load token info
+                loadTokenInfo();
+                
+                // Check system health
+                await checkSystemHealth();
+                
+                showMessage('✅ Dashboard caricata con successo!', 'success');
+                setTimeout(() => clearMessage(), 3000);
+                
+            } catch (error) {
+                console.error('Dashboard init error:', error);
+                showMessage(`❌ Errore caricamento dashboard: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadProfile() {
+            try {
+                currentUser = await springAuthClient.getProfile();
+                
+                // Update UI
+                document.getElementById('header-username').textContent = currentUser.username;
+                document.getElementById('profile-username').textContent = currentUser.username;
+                document.getElementById('profile-email').textContent = currentUser.email || '-';
+                document.getElementById('profile-roles').textContent = currentUser.roles || '-';
+                document.getElementById('profile-created').textContent = currentUser.createdAt ? 
+                    new Date(currentUser.createdAt).toLocaleDateString('it-IT') : '-';
+                
+            } catch (error) {
+                console.error('Profile load error:', error);
+                showMessage(`❌ Errore caricamento profilo: ${error.message}`, 'error');
+            }
+        }
+
+        function loadTokenInfo() {
+            try {
+                const token = springAuthClient.token;
+                if (token) {
+                    const decoded = decodeJWTToken(token);
                     
-                    displayUserProfile(userData);
-                    updateUserWelcome();
+                    document.getElementById('token-status').textContent = '✅ Valido';
+                    document.getElementById('token-expiry').textContent = decoded ? 
+                        new Date(decoded.exp * 1000).toLocaleString('it-IT') : 'N/A';
+                    document.getElementById('token-issuer').textContent = decoded?.iss || 'N/A';
                 } else {
-                    throw new Error('Impossibile caricare il profilo');
+                    document.getElementById('token-status').textContent = '❌ Assente';
                 }
             } catch (error) {
-                document.getElementById('profileDetails').innerHTML = 
-                    `<div class="error">❌ Errore caricamento profilo: ${error.message}</div>`;
+                console.error('Token info error:', error);
             }
         }
 
-        function displayUserProfile(user) {
-            const profileHtml = `
-                <p><strong>Username:</strong> ${user.username}</p>
-                <p><strong>Email:</strong> ${user.email || 'Non specificata'}</p>
-                <p><strong>Ruoli:</strong> ${user.roles ? user.roles.join(', ') : 'USER'}</p>
-                <p><strong>ID:</strong> ${user.id}</p>
-                <p><strong>Stato:</strong> <span class="status online">Attivo</span></p>
-            `;
-            
-            document.getElementById('userProfile').innerHTML = profileHtml;
-            document.getElementById('profileDetails').innerHTML = profileHtml;
-        }
-
-        async function checkServiceStatus() {
-            const services = [
-                { name: 'Auth Service', url: `${API_CONFIG.AUTH_SERVICE}${API_CONFIG.ENDPOINTS.HEALTH}` },
-                { name: 'Chat Service', url: `${API_CONFIG.CHAT_SERVICE}${API_CONFIG.ENDPOINTS.HEALTH}` }
-            ];
-
-            let statusHtml = '';
-            for (const service of services) {
-                try {
-                    const response = await fetch(service.url);
-                    const isOnline = response.ok;
-                    statusHtml += `
-                        <p>${service.name}: 
-                            <span class="status ${isOnline ? 'online' : 'offline'}">
-                                ${isOnline ? '🟢 Online' : '🔴 Offline'}
-                            </span>
-                        </p>
-                    `;
-                } catch (error) {
-                    statusHtml += `
-                        <p>${service.name}: 
-                            <span class="status offline">🔴 Offline</span>
-                        </p>
-                    `;
-                }
-            }
-
-            document.getElementById('serviceStatus').innerHTML = statusHtml;
-        }
-
-        async function testAllEndpoints() {
-            const results = [];
-            
-            // Test auth endpoints
+        async function checkSystemHealth() {
             try {
-                const profileResponse = await fetch(`${API_CONFIG.AUTH_SERVICE}${API_CONFIG.ENDPOINTS.PROFILE}`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                results.push(`✅ GET /auth/me: ${profileResponse.status}`);
-            } catch (error) {
-                results.push(`❌ GET /auth/me: Errore`);
-            }
-
-            // Test movies endpoint
-            try {
-                const moviesResponse = await fetch(`${API_CONFIG.AUTH_SERVICE}/movies`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                results.push(`✅ GET /movies: ${moviesResponse.status}`);
-            } catch (error) {
-                results.push(`❌ GET /movies: Errore`);
-            }
-
-            document.getElementById('apiResults').innerHTML = 
-                `<div class="api-test">${results.join('<br>')}</div>`;
-        }
-
-        async function testAuthEndpoints() {
-            try {
-                const response = await fetch(`${API_CONFIG.AUTH_SERVICE}${API_CONFIG.ENDPOINTS.VALIDATE}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({ token: authToken })
-                });
-
-                const result = await response.json();
-                document.getElementById('apiResults').innerHTML = 
-                    `<div class="success">✅ Token valido: ${result.valid}</div>`;
-            } catch (error) {
-                document.getElementById('apiResults').innerHTML = 
-                    `<div class="error">❌ Errore validazione: ${error.message}</div>`;
-            }
-        }
-
-        async function loadMovies() {
-            try {
-                const response = await fetch(`${API_CONFIG.AUTH_SERVICE}/movies`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-
-                if (response.ok) {
-                    const movies = await response.json();
-                    displayMovies(movies);
-                } else {
-                    document.getElementById('moviesList').innerHTML = 
-                        '<p>❌ Impossibile caricare i movies</p>';
-                }
-            } catch (error) {
-                document.getElementById('moviesList').innerHTML = 
-                    `<p>❌ Errore: ${error.message}</p>`;
-            }
-        }
-
-        function displayMovies(movies) {
-            if (!movies || movies.length === 0) {
-                document.getElementById('moviesList').innerHTML = 
-                    '<p>📽️ Nessun movie presente</p>';
-                return;
-            }
-
-            const moviesHtml = movies.map(movie => `
-                <div class="movie-item">
-                    <span><strong>${movie.title}</strong> (${movie.year || 'N/A'})</span>
-                    <span>${movie.genre || 'Generale'}</span>
-                </div>
-            `).join('');
-
-            document.getElementById('moviesList').innerHTML = moviesHtml;
-        }
-
-        async function addTestMovie() {
-            try {
-                const testMovie = {
-                    title: `Test Movie ${Date.now()}`,
-                    year: 2024,
-                    genre: 'Test'
-                };
-
-                const response = await fetch(`${API_CONFIG.AUTH_SERVICE}/movies`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify(testMovie)
-                });
-
-                if (response.ok) {
-                    await loadMovies(); // Ricarica la lista
-                    document.getElementById('moviesContent').insertAdjacentHTML('afterbegin',
-                        '<div class="success">✅ Movie aggiunto con successo!</div>');
-                } else {
-                    throw new Error('Impossibile aggiungere il movie');
-                }
-            } catch (error) {
-                document.getElementById('moviesContent').insertAdjacentHTML('afterbegin',
-                    `<div class="error">❌ Errore: ${error.message}</div>`);
-            }
-        }
-
-        function analyzeToken() {
-            try {
-                const tokenParts = authToken.split('.');
-                const payload = JSON.parse(atob(tokenParts[1]));
+                // Auth service health
+                const authHealth = await springAuthClient.checkServiceHealth('auth');
+                const authStatusEl = document.getElementById('auth-status');
+                const authContainer = authStatusEl.parentElement;
                 
-                const tokenInfo = `
-                    <div class="api-test">
-                        <strong>Token JWT Decodificato:</strong><br>
-                        • Subject: ${payload.sub}<br>
-                        • Issued At: ${new Date(payload.iat * 1000).toLocaleString()}<br>
-                        • Expires At: ${new Date(payload.exp * 1000).toLocaleString()}<br>
-                        • Issuer: ${payload.iss || 'Spring Auth System'}<br>
-                        • Authorities: ${payload.authorities || 'N/A'}<br>
-                    </div>
-                `;
+                if (authHealth.status === 'online') {
+                    authStatusEl.textContent = '✅ Online';
+                    authContainer.className = 'status-item status-online';
+                } else {
+                    authStatusEl.textContent = '❌ Offline';
+                    authContainer.className = 'status-item status-offline';
+                }
+
+                // Gateway status (simplified check)
+                document.getElementById('gateway-status').textContent = '✅ Online';
+                document.getElementById('gateway-status').parentElement.className = 'status-item status-online';
                 
-                document.getElementById('tokenInfo').innerHTML = tokenInfo;
             } catch (error) {
-                document.getElementById('tokenInfo').innerHTML = 
-                    `<div class="error">❌ Errore analisi token: ${error.message}</div>`;
+                console.error('Health check error:', error);
             }
         }
 
         async function validateToken() {
-            await testAuthEndpoints();
-        }
-
-        function showSystemInfo() {
-            const systemInfo = `
-                <div class="api-test">
-                    <strong>🖥️ Informazioni Sistema:</strong><br>
-                    • Spring Boot: 3.4.5<br>
-                    • Java: 17<br>
-                    • Database: PostgreSQL/H2<br>
-                    • Auth: JWT + Spring Security<br>
-                    • Architecture: Microservizi<br>
-                    • Monitoring: Actuator + Prometheus<br>
-                    • Container: Docker<br>
-                    • Security Score: 95/100<br>
-                </div>
-            `;
-            
-            document.getElementById('apiResults').innerHTML = systemInfo;
-        }
-
-        function adminTest() {
-            if (currentUser && currentUser.roles && currentUser.roles.includes('ADMIN')) {
-                document.getElementById('adminContent').innerHTML = 
-                    '<div class="success">👑 Accesso Admin confermato!</div>';
-            } else {
-                document.getElementById('adminContent').innerHTML = 
-                    '<div class="error">❌ Accesso negato - Privilegi Admin richiesti</div>';
+            try {
+                showMessage('🔄 Validazione token...', 'info');
+                await springAuthClient.validateToken();
+                showMessage('✅ Token valido!', 'success');
+            } catch (error) {
+                showMessage(`❌ Token non valido: ${error.message}`, 'error');
             }
         }
 
-        async function refreshProfile() {
-            document.getElementById('profileDetails').innerHTML = 
-                '<div class="loading">Aggiornamento...</div>';
-            await loadUserProfile();
+        async function testAuthEndpoints() {
+            try {
+                showMessage('🧪 Test endpoints in corso...', 'info');
+                
+                const tests = [
+                    { name: 'Profile', func: () => springAuthClient.getProfile() },
+                    { name: 'Validate', func: () => springAuthClient.validateToken() },
+                    { name: 'Health', func: () => springAuthClient.checkServiceHealth('auth') }
+                ];
+                
+                let results = [];
+                for (const test of tests) {
+                    try {
+                        await test.func();
+                        results.push(`✅ ${test.name}: OK`);
+                    } catch (error) {
+                        results.push(`❌ ${test.name}: ${error.message}`);
+                    }
+                }
+                
+                showMessage(`🧪 Test completati:\n${results.join('\n')}`, 'info');
+            } catch (error) {
+                showMessage(`❌ Errore test: ${error.message}`, 'error');
+            }
+        }
+
+        function downloadSystemInfo() {
+            const info = {
+                user: currentUser,
+                token: {
+                    present: !!springAuthClient.token,
+                    decoded: springAuthClient.token ? decodeJWTToken(springAuthClient.token) : null
+                },
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent
+            };
+            
+            const blob = new Blob([JSON.stringify(info, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `system-info-${new Date().getTime()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showMessage('📥 File scaricato!', 'success');
+        }
+
+        function clearLocalStorage() {
+            if (confirm('Sei sicuro di voler pulire la cache locale? Verrai disconnesso.')) {
+                localStorage.clear();
+                showMessage('🗑️ Cache pulita! Reindirizzamento...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+            }
         }
 
         function logout() {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
-            window.location.href = 'login.html';
+            if (confirm('Sei sicuro di voler uscire?')) {
+                springAuthClient.logout();
+            }
         }
 
-        // Auto-refresh ogni 30 secondi
-        setInterval(async () => {
-            await checkServiceStatus();
-        }, 30000);
+        function showMessage(message, type = 'info') {
+            const messageEl = document.getElementById('message');
+            messageEl.innerHTML = `<div class="${type}">${message.replace(/\n/g, '<br>')}</div>`;
+        }
+
+        function clearMessage() {
+            document.getElementById('message').innerHTML = '';
+        }
     </script>
 </body>
 </html>

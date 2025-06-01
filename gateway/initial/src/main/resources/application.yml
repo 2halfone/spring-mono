@@ -17,10 +17,6 @@ spring:
           uri: http://auth-service:8080
           predicates:
             - Path=/auth/**
-        - id: chat-service
-          uri: http://chat-service:8080
-          predicates:
-            - Path=/chat/**
 
 logging:
   level:

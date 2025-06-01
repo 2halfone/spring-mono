@@ -7,12 +7,10 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    strategy:
+    runs-on: ubuntu-latest    strategy:
       matrix:
         service:
           - auth-service
-          - chat-service
           - gateway-service # Add gateway-service to the matrix
 
     steps:

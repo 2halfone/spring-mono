@@ -55,7 +55,7 @@ cd auth-service
 ./mvnw spring-boot:run
 
 # Terminal 2 - Chat Service  
-cd chat-service
+cd auth-service
 ./mvnw spring-boot:run
 
 # Terminal 3 - Gateway
@@ -140,7 +140,7 @@ DELETE /movies/{id}         # Remove from watchlist
 # Proxy to auth-service
 /auth/**  → localhost:9081/auth/**
 
-# Proxy to chat-service  
+# Proxy to auth-service  
 /chat/**  → localhost:9082/**
 ```
 

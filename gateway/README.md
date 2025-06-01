@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-The **Gateway Service** is a Spring Cloud Gateway microservice that acts as a single entry point for the Spring Microservices architecture. It provides intelligent routing, load balancing, circuit breaker pattern implementation, and centralized security management for all backend services including auth-service and chat-service.
+The **Gateway Service** is a Spring Cloud Gateway microservice that acts as a single entry point for the Spring Microservices architecture. It provides intelligent routing, load balancing, circuit breaker pattern implementation, and centralized security management for the auth-service backend.
 
 ## 🏗️ Architecture
 
@@ -74,7 +74,7 @@ gateway/
 - Java 17+
 - Maven 3.6+
 - Docker (optional)
-- Running auth-service and chat-service instances
+- Running auth-service instance
 
 ### 1. Local Development
 
@@ -121,17 +121,13 @@ The gateway implements intelligent routing based on path predicates:
 
 | Route ID | Path Pattern | Target Service | Target URI | Description |
 |----------|--------------|----------------|------------|-------------|
-| `auth` | `/auth/**` | auth-service | `http://auth-service:8080` | Authentication and movie management |
-| `chat` | `/chat/**` | chat-service | `http://chat-service:8080` | Chat and messaging services |
+| `auth` | `/auth/**` | auth-service | `http://auth-service:8080` | Authentication and user management |
 
 ### Routing Examples
 
 ```bash
-# Route to auth-service (movie management)
-curl http://localhost:8080/auth/movies
-
-# Route to chat-service 
-curl http://localhost:8080/chat/messages
+# Route to auth-service (user management)
+curl http://localhost:8080/auth/users
 
 # Health check through gateway
 curl http://localhost:8080/actuator/health
@@ -179,11 +175,6 @@ management.endpoints.web.exposure.include=health,info
 spring.cloud.gateway.routes[0].id=auth-service
 spring.cloud.gateway.routes[0].uri=http://auth-service:8080
 spring.cloud.gateway.routes[0].predicates[0]=Path=/api/auth/**
-
-# Route to chat-service
-spring.cloud.gateway.routes[1].id=chat-service
-spring.cloud.gateway.routes[1].uri=http://chat-service:8080
-spring.cloud.gateway.routes[1].predicates[0]=Path=/api/chat/**
 ```
 
 #### Development Profile (application-dev.properties)
@@ -197,10 +188,6 @@ spring.cloud.gateway.routes[1].predicates[0]=Path=/api/chat/**
 spring.cloud.gateway.routes[0].id=auth
 spring.cloud.gateway.routes[0].predicates[0]=Path=/auth/**
 spring.cloud.gateway.routes[0].uri=http://auth-service:8080
-
-spring.cloud.gateway.routes[1].id=chat
-spring.cloud.gateway.routes[1].predicates[0]=Path=/chat/**
-spring.cloud.gateway.routes[1].uri=http://chat-service:8080
 ```
 
 ### Environment Variables
@@ -712,7 +699,7 @@ For questions or issues:
 
 ## 📋 Panoramica
 
-Il **Gateway Service** è un microservizio Spring Cloud Gateway che funge da punto di ingresso unico per l'architettura Spring Microservices. Fornisce routing intelligente, bilanciamento del carico, implementazione del pattern circuit breaker e gestione centralizzata della sicurezza per tutti i servizi backend inclusi auth-service e chat-service.
+Il **Gateway Service** è un microservizio Spring Cloud Gateway che funge da punto di ingresso unico per l'architettura Spring Microservices. Fornisce routing intelligente, bilanciamento del carico, implementazione del pattern circuit breaker e gestione centralizzata della sicurezza per il servizio backend auth-service.
 
 ## 🏗️ Architettura
 
@@ -784,7 +771,7 @@ gateway/
 - Java 17+
 - Maven 3.6+
 - Docker (opzionale)
-- Istanze di auth-service e chat-service in esecuzione
+- Istanze di auth-service in esecuzione
 
 ### 1. Sviluppo Locale
 
@@ -831,23 +818,19 @@ Il gateway implementa routing intelligente basato su predicati di path:
 
 | Route ID | Pattern Path | Servizio Target | URI Target | Descrizione |
 |----------|--------------|-----------------|------------|-------------|
-| `auth` | `/auth/**` | auth-service | `http://auth-service:8080` | Autenticazione e gestione film |
-| `chat` | `/chat/**` | chat-service | `http://chat-service:8080` | Servizi chat e messaggistica |
+| `auth` | `/auth/**` | auth-service | `http://auth-service:8080` | Autenticazione e gestione utenti |
 
 ### Esempi di Routing
 
 ```bash
-# Route verso auth-service (gestione film)
-curl http://localhost:8080/auth/movies
-
-# Route verso chat-service
-curl http://localhost:8080/chat/messages
+# Route verso auth-service (gestione utenti)
+curl http://localhost:8080/auth/users
 
 # Health check attraverso gateway
 curl http://localhost:8080/actuator/health
 
 # Accesso remoto (produzione)
-curl http://34.140.122.146:9080/auth/movies
+curl http://34.140.122.146:9080/auth/users
 curl http://34.140.122.146:9080/chat/messages
 ```
 
@@ -890,10 +873,6 @@ spring.cloud.gateway.routes[0].id=auth-service
 spring.cloud.gateway.routes[0].uri=http://auth-service:8080
 spring.cloud.gateway.routes[0].predicates[0]=Path=/api/auth/**
 
-# Route verso chat-service
-spring.cloud.gateway.routes[1].id=chat-service
-spring.cloud.gateway.routes[1].uri=http://chat-service:8080
-spring.cloud.gateway.routes[1].predicates[0]=Path=/api/chat/**
 ```
 
 #### Development Profile (application-dev.properties)
@@ -909,8 +888,7 @@ spring.cloud.gateway.routes[0].predicates[0]=Path=/auth/**
 spring.cloud.gateway.routes[0].uri=http://auth-service:8080
 
 spring.cloud.gateway.routes[1].id=chat
-spring.cloud.gateway.routes[1].predicates[0]=Path=/chat/**
-spring.cloud.gateway.routes[1].uri=http://chat-service:8080
+spring.cloud.gateway.routes[0].uri=http://auth-service:8080
 ```
 
 ### Variabili di Ambiente
@@ -921,7 +899,6 @@ SPRING_PROFILES_ACTIVE=staging
 
 # Configurazione specifica gateway
 SPRING_CLOUD_GATEWAY_ROUTES_0_URI=http://auth-service:8080
-SPRING_CLOUD_GATEWAY_ROUTES_1_URI=http://chat-service:8080
 
 # Logging
 LOGGING_LEVEL_ROOT=INFO
@@ -1163,7 +1140,6 @@ Il servizio gateway è integrato nel workflow GitHub Actions:
 matrix:
   service:
     - auth-service
-    - chat-service
     - gateway-service
 ```
 
