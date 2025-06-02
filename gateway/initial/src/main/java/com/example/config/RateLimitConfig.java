@@ -46,13 +46,12 @@ public class RateLimitConfig {
             50,   // burstCapacity: maximum tokens in bucket
             1     // requestedTokens: tokens per request
         );
-    }
-
-    /**
+    }    /**
      * Key resolver for rate limiting.
      * Uses IP address for anonymous requests, user ID for authenticated requests.
      */
     @Bean
+    @Primary
     public KeyResolver ipKeyResolver() {
         return exchange -> {
             // Check if user is authenticated (has X-User-Username header)

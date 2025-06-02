@@ -1,0 +1,42 @@
+Flusso di sviluppo e deploy
+1. Modifiche in locale
+Fai modifiche al codice (Java, config, ecc.) sul tuo PC.
+
+2. Ricostruisci il JAR e le immagini Docker
+Sempre: Ogni volta che cambi codice, devi ricostruire:
+
+Il file JAR (con mvn clean package o ./mvnw clean package)
+
+L'immagine Docker (con docker build ... o docker compose build)
+
+Motivo: Il container deve includere il nuovo JAR compilato, altrimenti parte col vecchio codice.
+
+3. Push del codice
+Fai git add ., git commit, git push sul tuo repository remoto (es. GitHub).
+
+4. Vai sulla VM/server
+Fai git pull per prendere le ultime modifiche del codice dalla repo.
+
+5. (RI)Costruisci su VM
+Devi ricostruire l’immagine Docker anche sulla VM!
+
+Comando: docker compose build
+
+Oppure: docker-compose build (a seconda della tua versione)
+
+Questo crea un nuovo container con il nuovo JAR al suo interno (prende il nuovo codice).
+
+6. Riavvia i servizi
+Dai lo stop e restart (docker compose down && docker compose up -d)
+
+Oppure solo restart (docker compose up -d --force-recreate)
+
+Così parti con i container aggiornati.
+
+❌ Se NON ricostruisci il JAR/Docker
+Anche se fai il pull del nuovo codice, i container continueranno a usare il vecchio JAR (quello già “baked” nella vecchia immagine)!
+
+Soluzione: Ogni modifica → nuovo build (JAR + Docker) → restart.
+
+✅ RIASSUNTO RAPIDO
+Ogni modifica codice → ricostruisci JAR e Docker → push → pull sulla VM → ricostruisci Docker → riavvia container
