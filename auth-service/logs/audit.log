@@ -1,0 +1,2 @@
+{"timestamp":"2025-05-31 11:10:00.812","level":"INFO","thread":"http-nio-0.0.0.0-8080-exec-1","logger":"AUDIT","correlationId":"","clientIp":"","message":"Successful login for user: admin from IP: 0:0:0:0:0:0:0:1","exception":""}
+{"timestamp":"2025-05-31 11:10:14.050","level":"WARN","thread":"http-nio-0.0.0.0-8080-exec-2","logger":"AUDIT","correlationId":"","clientIp":"","message":"Failed login attempt for user: moderator from IP: 0:0:0:0:0:0:0:1","exception":""}

@@ -1,0 +1,29 @@
+2025-06-02 18:48:50 [main] INFO  com.example.gateway.Application - Starting Application v0.0.1-SNAPSHOT using Java 17.0.14 with PID 12948 (C:\Users\mini\Desktop\Visual code\microservices\spring-mono\gateway\initial\target\gateway-service-0.0.1-SNAPSHOT.jar started by mini in C:\Users\mini\Desktop\Visual code\microservices\spring-mono)
+2025-06-02 18:48:50 [main] DEBUG com.example.gateway.Application - Running with Spring Boot v3.4.5, Spring v6.2.6
+2025-06-02 18:48:50 [main] INFO  com.example.gateway.Application - No active profile set, falling back to 1 default profile: "default"
+2025-06-02 18:48:51 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2025-06-02 18:48:51 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-06-02 18:48:51 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 10 ms. Found 0 Redis repository interfaces.
+2025-06-02 18:48:52 [main] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=710dddfb-c46a-32a1-b3fd-7b5ae3408790
+2025-06-02 18:48:52 [main] WARN  o.s.b.w.r.c.AnnotationConfigReactiveWebServerApplicationContext - Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'jwtAuthenticationGatewayFilterFactory': Unsatisfied dependency expressed through field 'jwtUtil': No qualifying bean of type 'com.example.security.JwtUtil' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
+2025-06-02 18:48:52 [main] INFO  o.s.b.a.l.ConditionEvaluationReportLogger - 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2025-06-02 18:48:52 [main] ERROR o.s.b.d.LoggingFailureAnalysisReporter - 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field jwtUtil in com.example.gateway.JwtAuthenticationGatewayFilterFactory required a bean of type 'com.example.security.JwtUtil' that could not be found.
+
+The injection point has the following annotations:
+	- @org.springframework.beans.factory.annotation.Autowired(required=true)
+
+
+Action:
+
+Consider defining a bean of type 'com.example.security.JwtUtil' in your configuration.
+

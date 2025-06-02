@@ -1,0 +1,175 @@
+🚀 TEST STAGING ENVIRONMENT - VM
+Step 1: Verifica Stato Attuale
+Verifichiamo prima la situazione della VM:
+
+# Verifica directory corrente
+pwd
+ls -la
+
+# Verifica ultimo commit
+git log --oneline -3
+
+# Verifica se ci sono servizi già in esecuzione
+ps aux | grep java
+docker ps
+
+
+Step 2: Avvio Infrastruttura Staging
+Avviamo prima i database necessari:
+# Avvio PostgreSQL e Redis con Docker
+docker run -d --name postgres-staging \
+  -e POSTGRES_DB=auth_db \
+  -e POSTGRES_USER=auth_user \
+  -e POSTGRES_PASSWORD=secure_password \
+  -p 5432:5432 \
+  postgres:15-alpine
+
+docker run -d --name redis-staging \
+  -p 6379:6379 \
+  redis:7-alpine
+
+# Verifica che i container siano avviati
+docker ps
+
+Step 3: Test Database Connectivity
+# Test PostgreSQL connectivity
+docker exec -it postgres-staging psql -U auth_user -d auth_db -c "SELECT version();"
+
+# Test Redis connectivity  
+docker exec -it redis-staging redis-cli ping
+
+Step 4: Compilazione e Avvio Auth-Service
+# Naviga alla directory auth-service
+cd auth-service
+
+# Compila il progetto
+./mvnw clean compile
+
+# Avvia auth-service con profilo staging
+./mvnw spring-boot:run -Dspring-boot.run.profiles=staging &
+
+# Verifica che si avvii correttamente
+sleep 10
+curl http://localhost:8081/actuator/health
+
+Step 5: Compilazione e Avvio Gateway
+# Naviga alla directory gateway
+cd ../gateway/initial
+
+# Compila il gateway
+./mvnw clean compile
+
+# Avvia gateway con profilo staging
+./mvnw spring-boot:run -Dspring-boot.run.profiles=staging &
+
+# Verifica che si avvii correttamente
+sleep 10
+curl http://localhost:8080/actuator/health
+
+Step 6: Test Auth-Service Endpoints
+# Test 1: Registrazione utente
+curl -X POST http://localhost:8081/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "email": "test@example.com", 
+    "password": "securePassword123"
+  }'
+
+# Test 2: Login utente
+LOGIN_RESPONSE=$(curl -X POST http://localhost:8081/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "password": "securePassword123"
+  }')
+
+echo "Login Response: $LOGIN_RESPONSE"
+
+# Estrai il token (se il response è in JSON)
+TOKEN=$(echo $LOGIN_RESPONSE | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+echo "Token: $TOKEN"
+
+Step 7: Test Endpoint Protetti
+# Test 3: Accesso al profilo con token
+curl -X GET http://localhost:8081/auth/me \
+  -H "Authorization: Bearer $TOKEN"
+
+# Test 4: Validazione token
+curl -X POST http://localhost:8081/auth/validate \
+  -H "Content-Type: application/json" \
+  -d "{\"token\": \"$TOKEN\"}"
+
+  Step 8: Test Gateway Routing
+# Test 5: Health check tramite gateway
+curl http://localhost:8080/actuator/health
+
+# Test 6: Routing auth tramite gateway
+curl -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "password": "securePassword123"
+  }'
+
+  Step 9: Test Database Persistence
+# Verifica dati nel database PostgreSQL
+docker exec -it postgres-staging psql -U auth_user -d auth_db -c "
+  SELECT id, username, email, role, created_at 
+  FROM users 
+  ORDER BY created_at DESC 
+  LIMIT 5;"
+
+  Step 10: Test Redis Rate Limiting
+# Test multiple requests per verificare rate limiting
+for i in {1..10}; do
+  echo "Request $i:"
+  curl -w "Status: %{http_code} | Time: %{time_total}s\n" \
+    -X GET http://localhost:8080/auth/me \
+    -H "Authorization: Bearer $TOKEN" \
+    -o /dev/null -s
+  sleep 1
+done
+
+
+Step 11: Monitoring e Logs
+# Verifica logs auth-service
+tail -f logs/auth-service.log &
+
+# Verifica logs gateway  
+tail -f logs/gateway.log &
+
+# Verifica utilizzo risorse
+docker stats postgres-staging redis-staging
+
+# Verifica porte in ascolto
+netstat -tulpn | grep -E ":8080|:8081|:5432|:6379"
+
+
+ Restart Services con Configuration Corrette
+
+ # Termina processi attivi
+pkill -f "spring-boot:run"
+
+# Riavvia auth-service con configurazione corretta
+cd ~/spring-mono/auth-service
+./mvnw spring-boot:run -Dspring-boot.run.profiles=staging &
+
+# Aspetta avvio
+sleep 15
+
+# Verifica porta corretta
+curl http://localhost:8081/actuator/health
+
+cd ~/spring-mono/gateway/initial
+
+# Ricompila con nuova configurazione
+./mvnw clean compile
+
+# Avvia gateway
+./mvnw spring-boot:run -Dspring-boot.run.profiles=staging &
+
+sleep 10
+
+# Verifica gateway
+curl http://localhost:8080/actuator/health
