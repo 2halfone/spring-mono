@@ -14,8 +14,10 @@
 3. **💾 POSTGRES** (Porta 5432/15432) - Database Persistenza
 4. **🔴 REDIS** (Porta 6379/16379) - Rate Limiting Cache
 
-### 🚫 **Servizi NON Implementati**
-- ❌ **Microservizi aggiuntivi**: Da implementare secondo necessità architetturale
+### 🚫 **Servizi NON Implementati (CLEANUP COMPLETATO)**
+- ✅ **Cleanup eseguito**: Rimossi tutti i riferimenti a servizi non implementati
+- ✅ **Architettura pulita**: Focus solo su auth-service e gateway implementati
+- 📋 **Dettagli**: Vedi `MOVIE_SERVICE_ANALYSIS_AND_CLEANUP.md`
 
 ---
 
