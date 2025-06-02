@@ -21,7 +21,7 @@ find gateway -name "*Application.java" -exec cat {} \;
 
 
 Verifica Controllers Effettivi:
-# Cerchiamo i controller reali
+# Cerchiamo i controller reali.
 echo "=== CONTROLLERS AUTH-SERVICE ==="
 find auth-service -name "*Controller.java" -exec basename {} \;
 
