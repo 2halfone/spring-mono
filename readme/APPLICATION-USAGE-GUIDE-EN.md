@@ -5,7 +5,7 @@
 
 ---
 
-## 📋 **TABLE OF CONTENTS**.
+## 📋 **TABLE OF CONTENTS**.o
 
 1. [Setup and Launch](#setup-and-launch)
 2. [System Architecture](#system-architecture)
