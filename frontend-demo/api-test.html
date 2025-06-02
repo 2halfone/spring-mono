@@ -146,16 +146,12 @@
             <button class="test-button" onclick="testLogout()">Logout</button>
             <button class="clear-btn" onclick="clearResults('authResults')">Clear</button>
             <div id="authResults" class="result"></div>
-        </div>
-
-        <!-- Movies API -->
+        </div>        <!-- API Testing Section - Future Implementation -->
         <div class="test-section">
-            <h3>🎬 MOVIES API TESTS</h3>
-            <button class="test-button" onclick="testGetMovies()">Get Movies</button>
-            <button class="test-button" onclick="testAddMovie()">Add Test Movie</button>
-            <button class="test-button" onclick="testMovieOperations()">Full CRUD Test</button>
-            <button class="clear-btn" onclick="clearResults('moviesResults')">Clear</button>
-            <div id="moviesResults" class="result"></div>
+            <h3>🚀 FUTURE API TESTS</h3>
+            <p class="info">Future microservices API endpoints will be tested here.</p>
+            <button class="test-button" disabled>Coming Soon - API Endpoints</button>
+            <div id="futureResults" class="result"></div>
         </div>
 
         <!-- Registration -->
@@ -324,82 +320,10 @@
             springAuthClient.logout();
             testToken = null;
             log('✅ Logout completed. Token cleared.', 'authResults', 'success');
-        }
-
-        // Movies API Tests
-        async function testGetMovies() {
-            if (!testToken) {
-                log('⚠️ No token available. Please login first.', 'moviesResults', 'error');
-                return;
-            }
-
-            log('🎬 Testing get movies...', 'moviesResults');
-            
-            try {
-                const startTime = performance.now();
-                const movies = await springAuthClient.getMovies();
-                const endTime = performance.now();
-                
-                log(`✅ Movies retrieved (${Math.round(endTime - startTime)}ms)`, 'moviesResults', 'success');
-                log(`   Count: ${movies.length} movies`, 'moviesResults', 'success');
-                
-                if (movies.length > 0) {
-                    movies.slice(0, 3).forEach(movie => {
-                        log(`   • ${movie.title} (${movie.year || 'N/A'}) - ${movie.genre || 'N/A'}`, 'moviesResults', 'success');
-                    });
-                    if (movies.length > 3) {
-                        log(`   ... and ${movies.length - 3} more`, 'moviesResults', 'success');
-                    }
-                }
-            } catch (error) {
-                log(`❌ Get movies failed: ${error.message}`, 'moviesResults', 'error');
-            }
-        }
-
-        async function testAddMovie() {
-            if (!testToken) {
-                log('⚠️ No token available. Please login first.', 'moviesResults', 'error');
-                return;
-            }
-
-            log('➕ Testing add movie...', 'moviesResults');
-            
-            try {
-                const testMovie = {
-                    title: `Test Movie ${Date.now()}`,
-                    year: 2024,
-                    genre: 'Test/Demo',
-                    director: 'Test Director',
-                    description: 'Movie created by API test suite'
-                };
-
-                const startTime = performance.now();
-                const result = await springAuthClient.addMovie(testMovie);
-                const endTime = performance.now();
-                
-                log(`✅ Movie added (${Math.round(endTime - startTime)}ms)`, 'moviesResults', 'success');
-                log(`   ID: ${result.id}`, 'moviesResults', 'success');
-                log(`   Title: ${result.title}`, 'moviesResults', 'success');
-            } catch (error) {
-                log(`❌ Add movie failed: ${error.message}`, 'moviesResults', 'error');
-            }
-        }
-
-        async function testMovieOperations() {
-            log('🎬 Testing full movie CRUD operations...', 'moviesResults');
-            
-            // First get current movies
-            await testGetMovies();
-            
-            // Add a test movie
-            await testAddMovie();
-            
-            // Get movies again to verify
-            await testGetMovies();
-            
-            log('✅ Full CRUD test completed', 'moviesResults', 'success');
-        }
-
+        }        // Future API Testing Functions
+        // Movie API functions removed - endpoints not implemented
+        // Future microservices will have their test functions here
+        
         // Registration Tests
         async function testRegistration() {
             log('📝 Testing user registration...', 'registrationResults');
@@ -611,8 +535,6 @@
                 { name: 'Login', func: testLogin },
                 { name: 'Profile', func: testProfile },
                 { name: 'Token Validation', func: testValidateToken },
-                { name: 'Movies API', func: testGetMovies },
-                { name: 'Add Movie', func: testAddMovie },
                 { name: 'Security', func: testUnauthorizedAccess },
                 { name: 'Performance', func: testResponseTimes }
             ];

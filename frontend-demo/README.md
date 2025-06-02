@@ -28,9 +28,6 @@ docker-compose up -d
 # OPPURE avvia manualmente
 cd auth-service
 mvn spring-boot:run
-
-cd chat-service  
-mvn spring-boot:run
 ```
 
 ### **2. 🌐 APRI IL FRONTEND**
@@ -72,7 +69,7 @@ python -m http.server 8000
 ### **📊 Dashboard (`dashboard.html`)**
 - ✅ Profilo utente completo
 - ✅ Test API endpoints
-- ✅ Movies management
+- ✅ Future microservices integration ready
 - ✅ Token analysis
 - ✅ Service status monitor
 - ✅ Admin functions (se admin)
@@ -99,7 +96,6 @@ Il frontend è configurato per connettersi a:
 ```javascript
 const API_CONFIG = {
     AUTH_SERVICE: 'http://localhost:9081',
-    CHAT_SERVICE: 'http://localhost:9082', 
     GATEWAY: 'http://localhost:9080'
 };
 ```
@@ -128,7 +124,7 @@ const API_CONFIG = {
 
 ### **Test API:**
 1. **Profile endpoint**
-2. **Movies CRUD**
+2. **Future microservices endpoints**
 3. **Token validation**
 4. **Service health**
 

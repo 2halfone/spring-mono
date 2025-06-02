@@ -90,7 +90,6 @@ Includes:
 - `GET /auth/profile` - User profile (requires auth)
 - `POST /auth/validate` - Token validation (internal)
 - `POST /auth/refresh` - Token refresh (requires refresh token)
-- `GET /chat/**` - All chat endpoints  
 - `POST /api/**` - All API endpoints
 - **Any future microservice endpoints**
 
@@ -119,15 +118,8 @@ spring.cloud.gateway.routes[0].filters[1].name=RequestRateLimiter
 spring.cloud.gateway.routes[0].filters[1].args.rate-limiter=#{@authRateLimiter}
 spring.cloud.gateway.routes[0].filters[1].args.key-resolver=#{@ipKeyResolver}
 
-# Chat Service Route (with JWT Auth + Rate Limiting)
-spring.cloud.gateway.routes[1].id=chat-service-secured
-spring.cloud.gateway.routes[1].uri=http://chat-service:8080
-spring.cloud.gateway.routes[1].predicates[0]=Path=/api/**
-spring.cloud.gateway.routes[1].filters[0].name=JwtAuthentication
-spring.cloud.gateway.routes[1].filters[1]=StripPrefix=1
-spring.cloud.gateway.routes[1].filters[2].name=RequestRateLimiter
-spring.cloud.gateway.routes[1].filters[2].args.rate-limiter=#{@apiRateLimiter}
-spring.cloud.gateway.routes[1].filters[2].args.key-resolver=#{@ipKeyResolver}
+# Chat Service Routes - Removed (service not implemented)
+# All chat-service references have been cleaned up from the configuration
 ```
 
 ### 🔄 **Rate Limiting Configuration**
@@ -189,10 +181,10 @@ server.ssl.port=8443
 ### Log Patterns
 ```bash
 # Successful Authentication
-AUTH SUCCESS: User 'john.doe' with roles 'USER,ADMIN' accessing GET /chat/messages from 192.168.1.100
+AUTH SUCCESS: User 'john.doe' with roles 'USER,ADMIN' accessing GET /api/data from 192.168.1.100
 
 # Failed Authentication
-AUTH FAILURE: Invalid JWT token for POST /chat/send from 192.168.1.100
+AUTH FAILURE: Invalid JWT token for POST /api/data from 192.168.1.100
 
 # Public Access
 PUBLIC ACCESS: POST /auth/login from 192.168.1.100 - No authentication required
@@ -302,23 +294,23 @@ I microservizi downstream dovrebbero **FIDARE** degli header inviati dal gateway
 
 ```java
 @RestController
-public class ChatController {
+public class ApiController {
     
-    @GetMapping("/messages")
-    public List<Message> getMessages(HttpServletRequest request) {
+    @GetMapping("/api/data")
+    public ResponseEntity<?> getData(HttpServletRequest request) {
         // Trust gateway validation
         String username = request.getHeader("X-User-Username");
         String roles = request.getHeader("X-User-Roles");
         
         // No need to validate JWT again!
-        return chatService.getMessagesForUser(username);
+        return apiService.getDataForUser(username);
     }
 }
 ```
 
 ### ⚠️ **IMPORTANTE: Rimuovere Validazione JWT dai Microservizi**
 - Auth-service: mantenere solo la **generazione** di JWT
-- Chat-service: rimuovere completamente la validazione JWT
+- Microservizi API: rimuovere completamente la validazione JWT
 - Altri servizi: fidare degli header del gateway
 
 ## 🎯 Benefits
@@ -356,7 +348,7 @@ public class ChatController {
 
 ### 🚀 **Immediate Next Actions**
 1. **Rimuovere JWT validation** dai microservizi individuali
-2. **Testare integrazione** con auth-service e chat-service
+2. **Testare integrazione** con auth-service e microservizi API
 3. **Configurare Redis cluster** per rate limiting in produzione
 4. **Implementare log aggregation** (ELK Stack)
 5. **Setup continuous deployment** pipeline

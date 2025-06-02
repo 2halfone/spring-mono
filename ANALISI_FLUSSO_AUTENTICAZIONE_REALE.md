@@ -15,8 +15,7 @@
 4. **🔴 REDIS** (Porta 6379/16379) - Rate Limiting Cache
 
 ### 🚫 **Servizi NON Implementati**
-- ❌ **Chat-Service**: Non presente nel sistema attuale
-- ❌ **Movie-Service**: Riferimenti obsoleti nella documentazione
+- ❌ **Microservizi aggiuntivi**: Da implementare secondo necessità architetturale
 
 ---
 
@@ -355,7 +354,7 @@ services:
 #### 1. **Architettura Incompleta**
 - **Problema**: Gateway protegge `/api/**` ma non ci sono microservizi che implementano queste route
 - **Impatto**: 404 errors per endpoint protetti
-- **Raccomandazione**: Implementare chat-service o rimuovere route protette non utilizzate
+- **Raccomandazione**: Implementare microservizi API o rimuovere route protette non utilizzate
 
 #### 2. **CORS Troppo Permissivo**
 ```java
@@ -385,9 +384,9 @@ return ResponseEntity.badRequest()
 ## 🎯 RACCOMANDAZIONI IMMEDIATE
 
 ### **Priority 1 - Architettura**
-1. **Implementare Chat-Service** reale per testare il flusso completo
-2. **Rimuovere riferimenti** a movie-service non implementato
-3. **Configurare CORS** specifico per domini production
+1. **Implementare microservizi API** reali per completare l'architettura
+2. **Configurare CORS** specifico per domini production
+3. **Definire API contracts** per futuri microservizi
 
 ### **Priority 2 - Sicurezza**
 1. **HTTPS Enforcement** - Redirect HTTP -> HTTPS
@@ -415,7 +414,7 @@ return ResponseEntity.badRequest()
 
 ## 🔄 NEXT STEPS RACCOMANDATI
 
-1. **Implementare Chat-Service** con trust sui gateway headers
+1. **Implementare microservizi API** con trust sui gateway headers
 2. **Security hardening** per production
 3. **Integration testing** completo del flusso auth
 4. **Performance testing** del gateway con load

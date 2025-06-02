@@ -153,13 +153,11 @@ public class JwtAuthenticationGatewayFilterFactory extends AbstractGatewayFilter
             path.startsWith("/assets/")) {
             return true;
         }
-        
-        // ===== ALL OTHER ENDPOINTS REQUIRE AUTHENTICATION =====
+          // ===== ALL OTHER ENDPOINTS REQUIRE AUTHENTICATION =====
         // This includes:
         // - /auth/validate (should be internal only)
         // - /auth/refresh (requires valid refresh token)
         // - /auth/profile (requires authentication)
-        // - /chat/** (all chat endpoints)
         // - /api/** (all API endpoints)
         return false;
     }

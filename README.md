@@ -2,10 +2,10 @@
 
 ## 📋 Project Overview
 
-This Spring Microservices architecture consists of three main services:
+This Spring Microservices architecture consists of:
 - **Auth Service** (Port 9081) - Authentication and authorization service
-- **Chat Service** (Port 9082) - Chat/messaging service
 - **Gateway Service** (Port 9080) - API Gateway and routing service
+- **Future API Services** - To be implemented as needed
 
 ---
 
@@ -37,7 +37,7 @@ This Spring Microservices architecture consists of three main services:
 
 1. **NO AUTHENTICATION LAYER**
    - **Impact**: All APIs are publicly accessible without authentication
-   - **Affected**: All three services (auth, chat, gateway)
+   - **Affected**: All services (auth, gateway, future microservices)
    - **Risk**: Data breach, unauthorized access, service abuse
 
 2. **NO AUTHORIZATION MECHANISM**
@@ -105,7 +105,7 @@ spring.cloud.gateway.globalcors.corsConfigurations.[/**].allowedMethods=GET,POST
 # NO REQUEST VALIDATION
 ```
 
-#### **Auth/Chat Services Security**
+#### **Auth Service Security**
 ```java
 // MINIMAL Security Configuration
 @Configuration

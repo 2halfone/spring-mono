@@ -133,15 +133,15 @@ curl http://localhost:8080/auth/users
 curl http://localhost:8080/actuator/health
 
 # Remote access (production)
-curl http://34.140.122.146:9080/auth/movies
-curl http://34.140.122.146:9080/chat/messages
+curl http://34.140.122.146:9080/auth/profile
+curl http://34.140.122.146:9080/api/data
 ```
 
 ### Gateway Features
 
 #### 1. Path-Based Routing
 - **Predicate**: `Path=/auth/**` routes to auth-service
-- **Predicate**: `Path=/chat/**` routes to chat-service
+- **Predicate**: `Path=/api/**` routes to API services
 - **Optional**: `StripPrefix=1` filter to remove route prefix
 
 #### 2. Load Balancing
@@ -198,7 +198,7 @@ SPRING_PROFILES_ACTIVE=staging
 
 # Gateway-specific configuration
 SPRING_CLOUD_GATEWAY_ROUTES_0_URI=http://auth-service:8080
-SPRING_CLOUD_GATEWAY_ROUTES_1_URI=http://chat-service:8080
+SPRING_CLOUD_GATEWAY_ROUTES_1_URI=http://api-service:8080
 
 # Logging
 LOGGING_LEVEL_ROOT=INFO
@@ -588,18 +588,18 @@ public class GatewayIntegrationTest {
     
     @Test
     public void testAuthServiceRouting() {
-        stubFor(get(urlEqualTo("/movies"))
+        stubFor(get(urlEqualTo("/profile"))
             .willReturn(aResponse()
                 .withStatus(200)
                 .withHeader("Content-Type", "application/json")
-                .withBody("[{\"id\":1,\"title\":\"Test Movie\"}]")));
+                .withBody("{\"username\":\"testuser\",\"roles\":[\"USER\"]}")));
         
         webClient.get()
-            .uri("/auth/movies")
+            .uri("/auth/profile")
             .exchange()
             .expectStatus().isOk()
             .expectBody()
-            .jsonPath("$[0].title").isEqualTo("Test Movie");
+            .jsonPath("$.username").isEqualTo("testuser");
     }
 }
 ```
@@ -621,9 +621,9 @@ scenarios:
   - name: "Gateway routing test"
     flow:
       - get:
-          url: "/auth/movies"
+          url: "/auth/profile"
       - get:
-          url: "/chat/messages"
+          url: "/auth/me"
 EOF
 
 # Run load test

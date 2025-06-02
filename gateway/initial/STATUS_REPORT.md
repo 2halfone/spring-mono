@@ -102,7 +102,7 @@
 Il Security Gateway è **completamente pronto** per:
 
 ### 🔄 **Immediate Next Steps**
-1. **Integration Testing** con auth-service e chat-service
+1. **Integration Testing** con auth-service e microservizi API
 2. **Remove JWT validation** dai microservizi individuali
 3. **Production SSL certificates** configuration
 4. **Redis cluster setup** per production
