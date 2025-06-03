@@ -42,7 +42,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
   # 🔐 AUTH SERVICE - INTERNAL ONLY
   auth-service:
     build: ./auth-service
@@ -64,11 +63,11 @@ services:
     networks:
       - microservices-internal
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-
+      retries: 5
+      start_period: 60s
   # 🌐 GATEWAY - EXTERNAL ACCESS ONLY
   gateway:
     build: ./gateway/initial
@@ -80,24 +79,21 @@ services:
         condition: service_healthy
     ports:
       # ✅ ONLY GATEWAY EXPOSED TO EXTERNAL WORLD
-      - "8080:8080"  # HTTP
-      - "8443:8443"  # HTTPS
+      - "8080:8080"  # HTTP Only for testing
     environment:
       JWT_SECRET: mySecretKey123456789012345678901234567890
       JWT_ISSUER: spring-microservices
-      SSL_KEYSTORE_PASSWORD: changeit
-      SSL_KEY_PASSWORD: changeit
       REDIS_HOST: redis
       REDIS_PORT: 6379
       AUTH_SERVICE_URL: http://auth-service:8080
       SPRING_PROFILES_ACTIVE: secure
     networks:
-      - microservices-internal
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      - microservices-internal    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 60s
 
 # 🔒 INTERNAL NETWORK ISOLATION
 networks:

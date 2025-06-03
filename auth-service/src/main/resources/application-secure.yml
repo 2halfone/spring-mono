@@ -1,0 +1,60 @@
+# 🔐 SECURE PROFILE CONFIGURATION - Auth Service
+# Configuration for containerized deployment with PostgreSQL
+
+spring:
+  application:
+    name: auth-service
+  
+  # 💾 PostgreSQL Database Configuration
+  datasource:
+    url: jdbc:postgresql://postgres:5432/auth_db
+    username: auth_user
+    password: secure_password
+    driver-class-name: org.postgresql.Driver
+  
+  # 🏗️ JPA/Hibernate Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    defer-datasource-initialization: true
+    properties:
+      hibernate:
+        format_sql: false
+        use_sql_comments: false
+  
+  # 🗄️ Database Initialization
+  sql:
+    init:
+      mode: always
+
+# 🌐 Server Configuration
+server:
+  port: 8080
+  address: 0.0.0.0
+
+# 🔑 JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:mySecretKey123456789012345678901234567890}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  issuer: ${JWT_ISSUER:spring-microservices}
+
+# 📊 Management & Health Checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# 📝 Logging Configuration (Secure Environment)
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: ERROR
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
