@@ -1,5 +1,8 @@
 version: "3.8"
 
+# 🔐 SECURE STAGING MICROSERVICES CONFIGURATION
+# Database ports removed - internal access only for security
+
 services:
   postgres:
     image: postgres:15
@@ -8,26 +11,43 @@ services:
       POSTGRES_DB: mydb
       POSTGRES_USER: springuser
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
-    ports:
-      - "15432:5432"
+    # ✅ SECURITY FIX: Database ports removed from external access
+    expose:
+      - "5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - microservices-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U springuser -d mydb"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   redis:
     image: redis:7-alpine
     restart: always
-    ports:
-      - "16379:6379"
-    command: redis-server
+    # ✅ SECURITY FIX: Redis ports removed from external access
+    expose:
+      - "6379"
+    command: redis-server --appendonly yes
     volumes:
       - redisdata:/data
-
+    networks:
+      - microservices-internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
   auth-service:
     build: ./auth-service
     depends_on:
-      - postgres
-    ports:
-      - "9081:8080"
+      postgres:
+        condition: service_healthy
+    # ✅ SECURITY FIX: Auth service internal access only
+    expose:
+      - "8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydb
       SPRING_DATASOURCE_USERNAME: springuser
@@ -35,12 +55,25 @@ services:
       JWT_SECRET: ${JWT_SECRET:-mySecretKey123456789012345678901234567890}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
       JWT_ISSUER: ${JWT_ISSUER:-spring-microservices}
+      SPRING_PROFILES_ACTIVE: staging
+    networks:
+      - microservices-internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+      
   gateway:
     build: ./gateway/initial
     depends_on:
-      - auth-service
-      - redis
+      auth-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
+      # ✅ Only Gateway exposed to external world
       - "9443:8443"  # HTTPS port
       - "9080:8080"  # HTTP redirect port
     environment:
@@ -51,6 +84,24 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      AUTH_SERVICE_URL: http://auth-service:8080
+      SPRING_PROFILES_ACTIVE: staging
+    networks:
+      - microservices-internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+# 🔒 SECURE NETWORK ISOLATION
+networks:
+  microservices-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
 
 volumes:
   pgdata:

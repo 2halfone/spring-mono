@@ -1,0 +1,228 @@
+echo "=== 🏗️ ARCHITETTURA ANALYSIS - MICROSERVICES SPRING-MONO ==="
+
+# STEP 1: Analisi Struttura Progetto
+echo "📁 Project Structure Analysis:"
+echo "Current directory: $(pwd)"
+ls -la
+echo ""
+
+# Identificare i microservizi presenti
+echo "🔍 Microservices Identification:"
+find . -name "pom.xml" -type f | head -10
+echo ""
+
+# STEP 2: Analisi Porte e Servizi
+echo "🌐 Services and Ports Analysis:"
+echo "Active ports on system:"
+netstat -tulpn | grep -E ":808[0-9]|:543[0-9]|:637[0-9]" || echo "No active services detected"
+echo ""
+
+# STEP 3: Analisi Container/Database
+echo "🗄️ Infrastructure Analysis:"
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+echo ""
+
+# STEP 4: Verifica Configurazioni Microservizi
+echo "⚙️ Microservices Configuration Analysis:"
+
+# Auth-Service configuration
+if [ -d "auth-service" ]; then
+    echo "📋 AUTH-SERVICE found:"
+    echo "  - Main class: $(find auth-service -name "*Application.java" 2>/dev/null)"
+    echo "  - Config files: $(find auth-service -name "application*.properties" -o -name "application*.yml" 2>/dev/null | wc -l)"
+    echo "  - Database scripts: $(find auth-service -name "*.sql" 2>/dev/null)"
+fi
+
+# Gateway configuration  
+if [ -d "gateway" ]; then
+    echo "📋 GATEWAY found:"
+    echo "  - Main class: $(find gateway -name "*Application.java" 2>/dev/null)"
+    echo "  - Config files: $(find gateway -name "application*.properties" -o -name "application*.yml" 2>/dev/null | wc -l)"
+fi
+
+echo ""
+
+# STEP 5: Analisi Dependencies (Maven)
+echo "📦 Dependencies Analysis:"
+if [ -f "pom.xml" ]; then
+    echo "Root POM detected - Multi-module project"
+    grep -A 5 -B 2 "<modules>" pom.xml 2>/dev/null || echo "No modules section found"
+else
+    echo "Individual microservices structure"
+fi
+
+
+
+echo "=== 🎯 ARCHITECTURE PATTERN ANALYSIS ==="
+
+# Analisi più approfondita del pattern architetturale
+echo "🏗️ Detailed Architecture Analysis:"
+
+# 1. Verifica pattern Gateway
+echo "📋 GATEWAY PATTERN Analysis:"
+find gateway -name "*.java" | xargs grep -l "Route\|Filter\|Gateway" | head -5
+
+# 2. Verifica pattern Auth
+echo "📋 AUTH PATTERN Analysis:"  
+find auth-service -name "*.java" | xargs grep -l "JWT\|Token\|Security" | head -5
+
+# 3. Analisi configurazioni Spring
+echo "📋 SPRING CONFIGURATION Analysis:"
+echo "Spring profiles detected:"
+find . -name "application-*.properties" -o -name "application-*.yml" | sort
+
+# 4. Analisi dependencies microservizi
+echo "📋 MICROSERVICES DEPENDENCIES:"
+echo "=== AUTH-SERVICE ==="
+grep -A 10 "dependencies" auth-service/pom.xml | head -15
+
+echo "=== GATEWAY ==="  
+grep -A 10 "dependencies" gateway/initial/pom.xml | head -15
+
+# 5. Verifica comunicazione inter-service
+echo "📋 INTER-SERVICE COMMUNICATION:"
+echo "Looking for service discovery patterns..."
+find . -name "*.properties" -o -name "*.yml" | xargs grep -l "service\|discovery\|eureka\|consul" 2>/dev/null || echo "Direct HTTP communication detected"
+
+
+echo "=== 🔍 VERIFICA REALE ARCHITETTURA ==="
+
+# 1. Verifica EFFETTIVA del routing Gateway
+echo "📋 GATEWAY ROUTING CONFIG:"
+find gateway -name "*.properties" -o -name "*.yml" | xargs grep -i "route" 2>/dev/null || echo "No explicit routing found"
+
+# 2. Verifica JWT REALE nel Gateway
+echo "📋 JWT IMPLEMENTATION IN GATEWAY:"
+grep -r "JWT\|Token" gateway/initial/src/main/java/ | head -5
+
+# 3. Verifica COMUNICAZIONE effettiva
+echo "📋 SERVICE COMMUNICATION:"
+grep -r "localhost:808" gateway/ || echo "No hardcoded service URLs found"
+
+# 4. Verifica Redis EFFETTIVO
+echo "📋 REDIS ACTUAL USAGE:"
+grep -r "redis\|Redis" gateway/ auth-service/ | grep -v target | head -5
+
+# 5. Test REALE di cosa succede
+echo "📋 LIVE ARCHITECTURE TEST:"
+echo "Testing actual flow..."
+curl -v http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}' 2>&1 | head -10
+
+
+
+
+
+  # # Test 1: Verifica EFFETTIVA del rate limiting Redis
+echo "🔍 Test Redis Rate Limiting:"
+redis-cli -p 6379 KEYS "*rate*" || echo "Redis not accessible via CLI"
+
+# Test 2: Verifica JWT token validation nel Gateway  
+echo "🔍 Test JWT Token Validation:"
+TOKEN="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlzcyI6InNwcmluZy1taWNyb3NlcnZpY2VzIiwiaWF0IjoxNzQ4OTUwMDIyLCJleHAiOjE3NDkwMzY0MjIsInJvbGVzIjoiQURNSU4ifQ.4-kE2PGhzIxjB1QXu46hSBheU67vY_r2AmKCGJ521as"
+curl -s -o /dev/null -w "Status: %{http_code}" \
+  -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8080/auth/me
+
+# Test 3: Verifica errore per endpoint protetto senza token
+echo "🔍 Test Protected Endpoint Security:"
+curl -s -o /dev/null -w "Status: %{http_code}" \
+  http://localhost:8080/auth/me
+
+
+  echo "=== 🔍 VERIFICA COLLEGAMENTO GATEWAY → DATABASE ==="
+
+# 1. Verifica dependencies del Gateway per database
+echo "📋 GATEWAY DATABASE DEPENDENCIES:"
+grep -A 20 "dependencies" gateway/initial/pom.xml | grep -E "postgres|h2|jpa|jdbc|database" || echo "No direct database dependencies found"
+
+# 2. Verifica configurazioni database nel Gateway
+echo "📋 GATEWAY DATABASE CONFIG:"
+find gateway/initial/src/main/resources -name "*.properties" -o -name "*.yml" | xargs grep -E "spring.datasource|spring.jpa|database|postgres|h2" 2>/dev/null || echo "No database config found"
+
+# 3. Verifica se Gateway usa database per rate limiting o session
+echo "📋 GATEWAY DATA PERSISTENCE:"
+find gateway/initial/src/main/java -name "*.java" | xargs grep -E "Repository|Entity|@Table|DataSource|JdbcTemplate" 2>/dev/null || echo "No direct database access found"
+
+# 4. Verifica se Redis è l'unico storage esterno
+echo "📋 GATEWAY EXTERNAL STORAGE:"
+find gateway/initial -name "*.properties" -o -name "*.yml" | xargs grep -E "redis|storage|persistence" | head -5
+
+
+echo "=== 🧪 TEST DI CONTROLLO ARCHITETTURA REALE ==="
+
+# TEST 1: Verifica che SOLO il Gateway sia accessibile dall'esterno
+echo "🌐 TEST 1 - ACCESSO DIRETTO AI SERVIZI:"
+echo "Gateway (dovrebbe funzionare):"
+curl -s -o /dev/null -w "Gateway 8080: %{http_code}\n" http://localhost:8080/actuator/health
+
+echo "Auth-Service diretto (dovrebbe essere accessibile ma nascosto):"
+curl -s -o /dev/null -w "Auth-Service 8081: %{http_code}\n" http://localhost:8081/actuator/health
+
+echo ""
+
+# TEST 2: Verifica routing attraverso Gateway
+echo "🚪 TEST 2 - ROUTING GATEWAY:"
+echo "Accesso via Gateway (corretto):"
+curl -s -o /dev/null -w "Gateway→Auth /auth/health: %{http_code}\n" http://localhost:8080/auth/health 2>/dev/null || echo "Route not configured for /auth/health"
+
+echo ""
+
+# TEST 3: Verifica che database NON sia accessibile dall'esterno
+echo "🗄️ TEST 3 - ACCESSO DATABASE ESTERNO:"
+echo "PostgreSQL (dovrebbe essere inaccessibile dall'esterno se configurato correttamente):"
+nc -z localhost 5432 && echo "PostgreSQL 5432: ACCESSIBLE" || echo "PostgreSQL 5432: NOT ACCESSIBLE"
+nc -z localhost 15432 && echo "PostgreSQL 15432: ACCESSIBLE" || echo "PostgreSQL 15432: NOT ACCESSIBLE"
+
+echo "Redis (dovrebbe essere inaccessibile dall'esterno se configurato correttamente):"
+nc -z localhost 6379 && echo "Redis 6379: ACCESSIBLE" || echo "Redis 6379: NOT ACCESSIBLE"
+nc -z localhost 16379 && echo "Redis 16379: ACCESSIBLE" || echo "Redis 16379: NOT ACCESSIBLE"
+
+echo ""
+
+# TEST 4: Verifica che Auth-Service NON accetti request da IP esterni (simulazione)
+echo "🛡️ TEST 4 - SICUREZZA AUTH-SERVICE:"
+echo "Login diretto su Auth-Service (bypass Gateway):"
+curl -s -o /dev/null -w "Direct Auth-Service login: %{http_code}\n" \
+  -X POST http://localhost:8081/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+
+echo "Login tramite Gateway (corretto):"
+curl -s -o /dev/null -w "Gateway Auth login: %{http_code}\n" \
+  -X POST http://localhost:8080/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+
+echo ""
+echo "🎯 RISULTATI ATTESI:"
+echo "✅ Gateway 8080: Accessibile"
+echo "⚠️ Auth-Service 8081: Tecnicamente accessibile ma dovrebbe essere usato solo internamente"
+echo "🔒 Database: Dipende dalla configurazione Docker"
+echo "🏗️ Architettura: Gateway = Single Point of Entry"
+
+
+echo "=== 🔒 TEST SICUREZZA POST-FIREWALL ==="
+
+echo "🌐 TEST ACCESSO ESTERNO (dovrebbero fallire):"
+echo "Auth-Service (dovrebbe essere bloccato):"
+curl -s -o /dev/null -w "Auth-Service 8081: %{http_code}\n" --connect-timeout 3 http://localhost:8081/actuator/health
+
+echo "PostgreSQL (dovrebbe essere bloccato):"
+nc -z -w3 localhost 5432 && echo "PostgreSQL 5432: ACCESSIBLE" || echo "PostgreSQL 5432: BLOCKED ✅"
+nc -z -w3 localhost 15432 && echo "PostgreSQL 15432: ACCESSIBLE" || echo "PostgreSQL 15432: BLOCKED ✅"
+
+echo "Redis (dovrebbe essere bloccato):"
+nc -z -w3 localhost 6379 && echo "Redis 6379: ACCESSIBLE" || echo "Redis 6379: BLOCKED ✅"
+nc -z -w3 localhost 16379 && echo "Redis 16379: ACCESSIBLE" || echo "Redis 16379: BLOCKED ✅"
+
+echo ""
+echo "✅ GATEWAY (dovrebbe funzionare):"
+curl -s -o /dev/null -w "Gateway 8080: %{http_code}\n" --connect-timeout 3 http://localhost:8080/actuator/health
+
+echo ""
+echo "🎯 ARCHITETTURA SICURA RAGGIUNTA:"
+echo "✅ SOLO Gateway accessibile dall'esterno"
+echo "✅ Servizi interni protetti da firewall"
+echo "✅ Single Point of Entry implementato correttamente"

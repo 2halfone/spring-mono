@@ -1,5 +1,8 @@
 version: "3.8"
 
+# 🔧 SECURE DEVELOPMENT MICROSERVICES CONFIGURATION
+# Database ports removed for security - use docker exec for direct access
+
 services:
   postgres:
     image: postgres:15
@@ -7,16 +10,70 @@ services:
       POSTGRES_DB: mydb
       POSTGRES_USER: springuser
       POSTGRES_PASSWORD: change_me
-    ports: [ "5432:5432" ]
-    volumes: [ pgdata:/var/lib/postgresql/data ]
+    # ✅ SECURITY FIX: Database ports removed from external access
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - microservices-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U springuser -d mydb"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      
   auth-service:
     build: ./auth-service
-    ports: [ "8081:8080" ]
+    # ✅ SECURITY FIX: Auth service internal access only
+    expose:
+      - "8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydb
       SPRING_DATASOURCE_USERNAME: springuser
       SPRING_DATASOURCE_PASSWORD: change_me
-    depends_on: [ postgres ]
+      SPRING_PROFILES_ACTIVE: dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - microservices-internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # 🌐 Gateway - Only external access point
+  gateway:
+    build: ./gateway/initial
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    ports:
+      - "8080:8080"  # HTTP for development
+    environment:
+      JWT_SECRET: mySecretKey123456789012345678901234567890
+      JWT_ISSUER: spring-microservices
+      AUTH_SERVICE_URL: http://auth-service:8080
+      SPRING_PROFILES_ACTIVE: dev
+    networks:
+      - microservices-internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+# 🔒 SECURE NETWORK ISOLATION
+networks:
+  microservices-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.22.0.0/16
 
 volumes:
   pgdata:
