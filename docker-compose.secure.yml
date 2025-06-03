@@ -84,7 +84,8 @@ services:
       JWT_SECRET: mySecretKey123456789012345678901234567890
       JWT_ISSUER: spring-microservices
       REDIS_HOST: redis
-      REDIS_PORT: 6379      AUTH_SERVICE_URL: http://auth-service:8080
+      REDIS_PORT: 6379
+      AUTH_SERVICE_URL: http://auth-service:8080
       SPRING_PROFILES_ACTIVE: secure
     networks:
       - microservices-internal
