@@ -1,20 +1,4 @@
-# 🛠️ SECURITY ISOLATION IMPLEMENTATION ROADMAP
-
-## 🎯 OVERVIEW
-
-This roadmap provides a **step-by-step implementation plan** to fix the critical security architecture vulnerability where all microservices are exposed externally instead of only the gateway serving as the single entry point.
-
-**Objective**: Isolate all services behind the gateway while maintaining full functionality.
-
----
-
-## 🏗️ PHASE 1: SECURE CONFIGURATION CREATION
-
-### **Step 1.1: Create Secure Docker Compose File**
-
-<function_calls>
-<invoke name="create_file">
-<parameter name="content">version: "3.8"
+version: "3.8"
 
 # 🔐 SECURE MICROSERVICES CONFIGURATION
 # Only gateway is exposed externally - all other services are internal-only
@@ -25,9 +9,9 @@ services:
     image: postgres:15
     restart: always
     environment:
-      POSTGRES_DB: mydb
-      POSTGRES_USER: springuser
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: secure_password
     # ✅ NO EXTERNAL PORTS - Internal access only
     expose:
       - "5432"
@@ -36,7 +20,7 @@ services:
     networks:
       - microservices-internal
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U springuser -d mydb"]
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -70,12 +54,12 @@ services:
     expose:
       - "8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydb
-      SPRING_DATASOURCE_USERNAME: springuser
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
-      JWT_SECRET: ${JWT_SECRET:-mySecretKey123456789012345678901234567890}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
-      JWT_ISSUER: ${JWT_ISSUER:-spring-microservices}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: auth_user
+      SPRING_DATASOURCE_PASSWORD: secure_password
+      JWT_SECRET: mySecretKey123456789012345678901234567890
+      JWT_EXPIRATION_MS: 86400000
+      JWT_ISSUER: spring-microservices
       SPRING_PROFILES_ACTIVE: secure
     networks:
       - microservices-internal
@@ -96,16 +80,15 @@ services:
         condition: service_healthy
     ports:
       # ✅ ONLY GATEWAY EXPOSED TO EXTERNAL WORLD
-      - "9080:8080"  # HTTP
-      - "9443:8443"  # HTTPS
+      - "8080:8080"  # HTTP
+      - "8443:8443"  # HTTPS
     environment:
-      JWT_SECRET: ${JWT_SECRET:-mySecretKey123456789012345678901234567890}
-      JWT_ISSUER: ${JWT_ISSUER:-spring-microservices}
-      SSL_KEYSTORE_PASSWORD: ${SSL_KEYSTORE_PASSWORD:-changeit}
-      SSL_KEY_PASSWORD: ${SSL_KEY_PASSWORD:-changeit}
+      JWT_SECRET: mySecretKey123456789012345678901234567890
+      JWT_ISSUER: spring-microservices
+      SSL_KEYSTORE_PASSWORD: changeit
+      SSL_KEY_PASSWORD: changeit
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
       AUTH_SERVICE_URL: http://auth-service:8080
       SPRING_PROFILES_ACTIVE: secure
     networks:
