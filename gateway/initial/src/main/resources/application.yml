@@ -1,6 +1,15 @@
 server:
   port: 8080
 
+# Additional port configuration for dual-port setup
+---
+spring:
+  config:
+    activate:
+      on-profile: dual-port
+server:
+  port: 8082
+
 management:
   endpoints:
     web:
@@ -14,7 +23,7 @@ spring:
     gateway:
       routes:
         - id: auth-service
-          uri: http://auth-service:8080
+          uri: http://localhost:8081
           predicates:
             - Path=/auth/**
 
