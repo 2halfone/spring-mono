@@ -1,0 +1,83 @@
+version: "3.8"
+
+# 🔐 SECURE MICROSERVICES CONFIGURATION
+# Only gateway is exposed externally - all other services are internal-only
+
+services:
+  # 🗄️ DATABASE - INTERNAL ONLY
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: secure_password
+    # ✅ NO EXTERNAL PORTS - Internal access only
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - microservices-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 🚀 CACHE - INTERNAL ONLY  
+  redis:
+    image: redis:7-alpine
+    restart: always
+    # ✅ NO EXTERNAL PORTS - Internal access only
+    expose:
+      - "6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+    networks:
+      - microservices-internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  # 🔐 AUTH SERVICE - INTERNAL ONLY
+  auth-service:
+    build: ./auth-service
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # ✅ NO EXTERNAL PORTS - Internal access only
+    expose:
+      - "8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: auth_user
+      SPRING_DATASOURCE_PASSWORD: secure_password
+      JWT_SECRET: mySecretKey123456789012345678901234567890
+      JWT_EXPIRATION_MS: 86400000
+      JWT_ISSUER: spring-microservices
+      SPRING_PROFILES_ACTIVE: secure
+    networks:
+      - microservices-internal
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  # 🌐 GATEWAY - EXTERNAL ACCESS ONLY
+
+# 🔒 INTERNAL NETWORK ISOLATION
+networks:
+  microservices-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  pgdata:
+  redisdata:
